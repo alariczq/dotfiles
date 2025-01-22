@@ -5,6 +5,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+[ -z "$TERM" ] || ! infocmp "$TERM" >/dev/null 2>&1 && export TERM=xterm-256color
+
 # zsh 命令行提示符 % 问题
 PROMPT_EOL_MARK=''
 
@@ -20,6 +22,7 @@ export FZF_DEFAULT_OPTS='
 --info="inline: " 
 --scrollbar=▊ 
 --color=pointer:#9d79d6,header:#738091,prompt:#baa1e2,border:#39506d,scrollbar:#39506d,gutter:#192330,marker:#9d79d6,separator:#39506d,hl:#9d79d6,info:#dc8ed9,hl+:#9d79d6,bg+:#29394f,spinner:#baa1e2,fg+:#cdcecf'
+
 
 zstyle ':fzf-tab:complete:_zlua:*' query-string input
 zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps -p $word -o command -w -w | sed -e 1d'
