@@ -64,6 +64,9 @@ autoload -Uz $XDG_CONFIG_HOME/zsh/functions/*(:t)
 
 pathctl load $ZDOTDIR/.env 2>/dev/null
 
+eval "$(/opt/homebrew/bin/brew shellenv)"
+eval "$(mise activate)"
+
 GENCOMP_DIR=$XDG_CONFIG_HOME/zsh/completions
 
 export _ZL_DATA=$ZDOTDIR/.z
@@ -87,6 +90,7 @@ zinit lucid light-mode for $programs
 
 # source $ZDOTDIR/.p10k.zsh
 zinit depth"1 " nocd light-mode for romkatv/powerlevel10k
+
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
 [[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh

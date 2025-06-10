@@ -11,6 +11,8 @@ skip_global_compinit=1
 
 export GOPATH=$HOME/.local/go 
 export GOBIN=$GOPATH/bin
+export RUSTUP_HOME=$HOME/.local/rustup
+export CARGO_HOME=$HOME/.local/cargo
 
 export LESSHISTFILE=/dev/null
 export PYTHONSTARTUP=$XDG_CONFIG_HOME/python/startup.py; [[ ! -e $PYTHONSTARTUP ]] && unset PYTHONSTARTUP
@@ -21,5 +23,3 @@ export PATH=$ZDOTDIR/bin:$PATH
 
 export ENVFILEPATH=$ZDOTDIR/env
 
-export LDFLAGS="-L/usr/local/opt/mysql-client/lib"
-export CPPFLAGS="-I/usr/local/opt/mysql-client/include"
