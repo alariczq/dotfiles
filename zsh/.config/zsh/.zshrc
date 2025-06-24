@@ -1,3 +1,3 @@
 source $ZDOTDIR/zshrc.zsh
 
-pathctl load
+pathctl load >/dev/null 2>&1 

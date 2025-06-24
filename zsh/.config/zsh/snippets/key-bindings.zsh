@@ -24,7 +24,6 @@ setopt autocd
 autoload -Uz zcalc zmv
 autoload -U colors && colors
 
-# zce {{{2
 # 快速跳转到指定字符
 function zce-jump-char() {
     [[ -z $BUFFER ]] && zle up-history
