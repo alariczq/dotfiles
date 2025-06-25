@@ -1,150 +1,99 @@
-#!/usr/bin/env zsh
-
-# PATH management utility
-# Environment file path configuration
 ENVFILEPATH=${ENVFILEPATH:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh/.env}
 
-# Utility functions for path manipulation
-_pathctl_unique() {
+_pathctl_unique(){
   awk '!seen[$0]++'
 }
 
-_pathctl_join() {
+_pathctl_join(){
   local sep="${1:-:}"
-  awk -v sep="$sep" '{ output = output ? output sep $0 : $0 } END { print output }'
+  awk -v sep=$sep '{ output = output ? output sep $0 : $0 } END { print output }'
 }
 
-_pathctl_read_env() {
-  local env_file="${1:-$ENVFILEPATH}"
-  [[ ! -f "$env_file" ]] && return 1
-  
-  # Parse environment file: remove comments, trim whitespace, skip empty lines
-  sed -e 's/#.*//; s/^[[:blank:]]*//; s/[[:blank:]]*$//' \
-      -e '/^$/d' \
-      -e 's/.*/[ -d "&" ] \&\& echo &/' "$env_file" | sh
+_pathctl_read_env(){
+  local ENVFILEPATH=${1:-$ENVFILEPATH}
+  sed -e 's/#.*//; s/^[[:blank:]]*//; s/[[:blank:]]*$//' -e '/^$/d' -e 's/.*/[ -d "&" ] \&\& echo &/' $ENVFILEPATH | sh
 }
 
 load_paths() {
-  local env_file="${1:-$ENVFILEPATH}"
-  echo "$(_pathctl_read_env "$env_file" | _pathctl_join):$PATH" | 
-    tr ':' '\n' | _pathctl_unique | _pathctl_join
+  local ENVFILEPATH=${1:-$ENVFILEPATH}
+  echo "$(_pathctl_read_env $ENVFILEPATH | _pathctl_join):$PATH" | tr ':' '\n' | _pathctl_unique | _pathctl_join
 }
 
-_pathctl_err() {
-  echo "pathctl: $*" >&2
+_pathctl_err(){
+  echo "$@" >&2
 }
 
-_pathctl_precheck() {
+_pathctl_precheck(){
   local file_path="${1:-$ENVFILEPATH}"
-  
-  # Create file if it doesn't exist
-  if [[ ! -e "$file_path" ]]; then
-    touch "$file_path" || {
-      _pathctl_err "Failed to create \"$file_path\""
-      return 1
-    }
+  if [[ ! -e $ENVFILEPATH ]]; then
+    touch $ENVFILEPATH
     return 0
   fi
 
-  # Check if it's a regular file
-  if [[ ! -f "$file_path" ]]; then
-    _pathctl_err "\"$file_path\" is not a file"
+  if [[ ! -f $ENVFILEPATH ]]; then
+    _pathctl_err "Error: \"$ENVFILEPATH\" is not a file."
     return 1
   fi
 
-  # Check if it's writable
-  if [[ ! -w "$file_path" ]]; then
-    _pathctl_err "\"$file_path\" is not writable"
+  if [[ ! -w $ENVFILEPATH ]]; then
+    _pathctl_err "Error: \"$ENVFILEPATH\" is not writable."
     return 1
   fi
 }
 
-_pathctl_normalize_path() {
-  local path="$1"
-  
-  # Check if directory exists
-  if [[ ! -d "$path" ]]; then
-    _pathctl_err "\"$path\": Not a directory"
-    return 1
-  fi
-
-  # Get absolute path
-  realpath "$path" 2>/dev/null || {
-    _pathctl_err "\"$path\": Invalid path"
-    return 1
-  }
-}
-
-_pathctl_build_targets() {
-  local targets=""
-  local target normalized
-  
-  for target in "${@:-$(pwd)}"; do
-    normalized=$(_pathctl_normalize_path "$target") || return 1
-    
-    if [[ -n "$targets" ]]; then
-      targets+=":$normalized"
-    else
-      targets="$normalized"
-    fi
-  done
-  
-  echo "$targets"
-}
-
-_pathctl_update_env_cache() {
-  local env_file="${1:-$ENVFILEPATH}"
-  local cache_var="_PATHCTL_ENV_$(echo "$env_file" | tr './' '_')"
-  eval "$cache_var='$(_pathctl_read_env "$env_file" | _pathctl_unique | _pathctl_join)'"
-}
-
-_pathctl() {
+_pathctl(){
   local cmd="${1:-help}"
-  [[ $# -gt 0 ]] && shift
+  if (( $# > 0 )); then
+    shift
+  fi
 
-  case "$cmd" in
+  case $cmd in
     put)
-      _pathctl_precheck "$ENVFILEPATH" || return 1
+      ! _pathctl_precheck $ENVFILEPATH && return 1
 
-      local targets
-      targets=$(_pathctl_build_targets "$@") || return 1
+      local targets=""
+      for target in ${@:-$(pwd)}; do
+        if [[ ! -d "$target" ]]; then
+          _pathctl_err "\"$target\": Not a directory"
+          return 1
+        fi
 
-      # Get existing paths from environment file
-      local existing_paths
-      existing_paths=$(_pathctl_read_env | _pathctl_join)
+        if [[ ! -e "$target" ]] ; then
+          _pathctl_err "\"$target\": Invalid PATH"
+          return 1
+        fi
 
-      # Create temporary file for atomic update
-      local temp_file
-      temp_file=$(mktemp) || {
-        _pathctl_err "Failed to create temporary file"
-        return 1
-      }
+        target=$(realpath $target)
 
-      # Add new paths that don't already exist
-      awk -v home="$HOME" -v existing="$existing_paths" -v new_targets="$targets" '
-      BEGIN {
-        # Build lookup table for existing paths
-        split(existing, paths, ":")
-        for (i in paths) {
-          if (paths[i] != "") seen[paths[i]] = 1
+        if [ -n "$targets" ]; then
+          targets+=":$target"
+        else
+          targets="$target"
+        fi
+      done
+
+      local paths=$(_pathctl_read_env | _pathctl_join)
+      local temp_file=$(mktemp)
+      awk -v home=$HOME -v _paths=$paths -v _targets=$targets 'BEGIN {
+        paths_n = split(_paths, paths, ":")
+        for (i = 1; i <= paths_n; i++) {
+          seen[paths[i]]++
         }
 
-        # Add new targets in reverse order (prepend)
-        split(new_targets, targets, ":")
-        for (i = length(targets); i >= 1; i--) {
-          if (targets[i] != "" && !seen[targets[i]]) {
+        targets_n = split(_targets, targets, ":")
+        for (i = targets_n; i > 0; i--) {
+          if (!seen[targets[i]]) {
             gsub("^" home, "$HOME", targets[i])
             print targets[i]
           }
         }
       }
-      { print }
-      ' "$ENVFILEPATH" > "$temp_file" && mv "$temp_file" "$ENVFILEPATH"
 
-      # Update PATH and cache
+      { print }' $ENVFILEPATH > $temp_file && mv $temp_file $ENVFILEPATH
+
       export PATH=$(load_paths)
-      _pathctl_update_env_cache
-      ;;
+      eval "_PATHCTL_ENV_$(echo $ENVFILEPATH | tr './' '_')='$(_pathctl_read_env | _pathctl_unique | _pathctl_join)'"
+    ;;
 
     ls)
       if [[ ! -e "$ENVFILEPATH" ]]; then
@@ -153,151 +102,121 @@ _pathctl() {
       fi
 
       if [[ "$1" == "-p" ]]; then
-        _pathctl_read_env "$ENVFILEPATH"
+        _pathctl_read_env $ENVFILEPATH
       else
-        cat "$ENVFILEPATH"
+        cat $ENVFILEPATH
       fi
-      ;;
+    ;;
 
     ls-paths)
       echo "$PATH" | tr ':' '\n'
-      ;;
+    ;;
 
     del)
-      _pathctl_precheck "$ENVFILEPATH" || return 1
+      ! _pathctl_precheck $ENVFILEPATH && return 1
 
-      local targets
-      targets=$(_pathctl_build_targets "$@") || return 1
+      local targets=""
+      for target in ${@:-$(pwd)}; do
+        if [ -e "$target" ] && [ -d "$target" ]; then
+          target=$(realpath $target)
+        fi
+        if [ -n "$targets" ]; then
+          targets+=":$target"
+        else
+          targets="$target"
+        fi
+      done
 
-      # Remove from environment file
-      local temp_file
-      temp_file=$(mktemp) || {
-        _pathctl_err "Failed to create temporary file"
-        return 1
-      }
-
-      # Get environment paths for deletion
-      local env_paths
-      env_paths=$(_pathctl_read_env | _pathctl_join)
-
-      # Create sed expression to delete matching lines
-      local sed_expr
-      sed_expr=$(awk -v env_paths="$env_paths" -v targets="$targets" '
-      BEGIN {
-        split(targets, target_arr, ":")
-        split(env_paths, env_arr, ":")
-        
-        for (i in target_arr) {
-          for (j in env_arr) {
-            if (env_arr[j] == target_arr[i]) {
-              expr = expr j "d;"
-            }
+      local _envs="$(cat $ENVFILEPATH | sed -e 's/.*/echo &/' | sh | _pathctl_join)"
+      expr=$(awk -v envs=$_envs -v target=$targets 'BEGIN {
+        targets_n = split(target, targets, ":")
+        paths_n = split(envs, paths, ":")
+        for (i = 1; i <= targets_n; i++) {
+          for (j = 1; j <= paths_n; j++) {
+            if (paths[j] == targets[i]) {
+              output = output j "d;"
+            }  
           }
         }
-        print expr
+        print output
       }')
       
-      if [[ -n "$sed_expr" ]]; then
-        sed "$sed_expr" "$ENVFILEPATH" > "$temp_file" && mv "$temp_file" "$ENVFILEPATH"
+      if [ -n "$expr" ]; then
+        local temp_file=$(mktemp)
+        sed "$expr" $ENVFILEPATH > $temp_file && mv $temp_file $ENVFILEPATH
       fi
 
-      # Remove from current PATH
-      local new_path
-      new_path=$(awk -v current_path="$PATH" -v targets="$targets" '
-      BEGIN {
-        split(targets, target_arr, ":")
-        for (i in target_arr) {
-          if (target_arr[i] != "") to_remove[target_arr[i]] = 1
+      _paths=$(awk -v _paths=$PATH -v _targets=$targets 'BEGIN {
+        targets_n = split(_targets, targets, ":")
+        for (i = 1; i <= targets_n; i++) {
+          seen[targets[i]]++
         }
 
-        split(current_path, path_arr, ":")
-        for (i in path_arr) {
-          if (path_arr[i] != "" && !to_remove[path_arr[i]]) {
-            result = result ? result ":" path_arr[i] : path_arr[i]
+        paths_n = split(_paths, paths, ":")
+        for (i = 1; i <= paths_n; i++) {
+          if (seen[paths[i]]) {
+            delete paths[i]
           }
         }
-        print result
+
+        for (i = 1; i <= length(paths); i++) {
+          if (paths[i] != "") {
+            output = output ? output ":" paths[i] : paths[i]
+          } 
+        }
+
+        print output
       }')
-      
-      [[ -n "$new_path" ]] && export PATH="$new_path"
-      _pathctl_update_env_cache
-      ;;
+      [ -n "$_paths" ] && export PATH=$_paths
+
+      eval "_PATHCTL_ENV_$(echo $ENVFILEPATH | tr './' '_')='$(_pathctl_read_env | _pathctl_unique | _pathctl_join)'"
+    ;;
 
     load)
       local file_path="${1:-$ENVFILEPATH}"
-      
-      if [[ ! -f "$file_path" ]]; then
+      if [[ ! -e "$file_path"  ]] || [[ ! -f $ENVFILEPATH ]]; then
         _pathctl_err "\"$file_path\": No such file or not a file"
-        return 0
+        return 1
       fi
 
-      # Remove previously loaded paths from this file
-      local cache_var="_PATHCTL_ENV_$(echo "$file_path" | tr './' '_')"
-      local previously_loaded
-      eval "previously_loaded=\$$cache_var"
+      export PATH=$(echo $PATH | tr ':' '\n' |
+        awk -v PATH_ENV="$(eval "echo \$_PATHCTL_ENV_$(echo $file_path | tr './' '_')")" \
+          'BEGIN { n = split(PATH_ENV, paths, ":"); for (i = 1; i <= n; i++) { set[paths[i]]++ } } !set[$0]' |
+        _pathctl_join
+      )
 
-      if [[ -n "$previously_loaded" ]]; then
-        export PATH=$(echo "$PATH" | tr ':' '\n' | 
-          awk -v prev="$previously_loaded" '
-          BEGIN { 
-            split(prev, paths, ":")
-            for (i in paths) {
-              if (paths[i] != "") to_remove[paths[i]] = 1
-            }
-          }
-          !to_remove[$0]
-          ' | _pathctl_join)
-      fi
-
-      # Load new paths
-      export PATH=$(load_paths "$file_path")
-      _pathctl_update_env_cache "$file_path"
-      ;;
+      export PATH=$(load_paths $file_path)
+      eval "_PATHCTL_ENV_$(echo $file_path | tr './' '_')='$(_pathctl_read_env | _pathctl_unique | _pathctl_join)'"
+    ;;
 
     edit)
-      ${EDITOR:-vim} "$ENVFILEPATH"
-      _pathctl load "$ENVFILEPATH"
-      ;;
+      ${EDITOR:-vim} $ENVFILEPATH
+      _pathctl load $ENVFILEPATH
+    ;;
 
     tidy)
-      _pathctl_precheck "$ENVFILEPATH" || return 1
+      ! _pathctl_precheck $ENVFILEPATH && return 1
 
-      _pathctl_read_env | 
-        sed "s#$HOME#\$HOME#g" | 
-        _pathctl_unique > "$ENVFILEPATH"
-      ;;
+      _pathctl_read_env | sed "s#$HOME#\$HOME#" | _pathctl_unique | tee $ENVFILEPATH > /dev/null
+    ;;
 
     help|*)
-      cat >&2 << 'EOF'
-pathctl - PATH environment variable management utility
+      printf "\033[0;32mfor manage PATH environment variable\033[0;00m
 
-USAGE:
-  pathctl [COMMAND] [OPTIONS]
+\033[0;33mUSAGE:\033[0;00m
+  pathctl [COMMAND] [FLAGS]
 
-COMMANDS:
-  put [PATH]...       Add directories to PATH (default: current directory)
-  del [PATH]...       Remove directories from PATH (default: current directory)
-  ls [-p]             List PATH entries from environment file
-                      -p: show resolved paths
-  ls-paths            List current $PATH entries
-  load [FILE]         Load PATH entries from file
-  edit                Edit environment file with $EDITOR
-  tidy                Clean and deduplicate environment file
-  help                Show this help message
-
-ENVIRONMENT:
-  ENVFILEPATH         Path to environment file
-                      (default: $XDG_CONFIG_HOME/zsh/.env)
-  EDITOR              Editor for 'edit' command (default: vim)
-
-EXAMPLES:
-  pathctl put /usr/local/bin        # Add directory to PATH
-  pathctl del /usr/local/bin        # Remove directory from PATH
-  pathctl put . ../bin              # Add multiple directories
-  pathctl ls -p                     # List resolved paths
-  pathctl tidy                      # Clean environment file
-EOF
-      ;;
+\033[0;33mCOMMAND:\033[0;00m
+  ls                  list PATHs
+          [-p]        show real path
+  del     [P]...      remove P from PATH environment
+  put     [P]...      put P into PATH environment, default current directory
+  load    [P]         load env from P
+  edit                use editor open the env file; default: ${EDITOR:-vim}
+  ls-paths            list the current \$PATH
+  help                show this message
+" >&2
+    ;;
   esac
 }
 

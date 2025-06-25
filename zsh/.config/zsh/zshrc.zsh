@@ -65,7 +65,7 @@ autoload -Uz $XDG_CONFIG_HOME/zsh/functions/*(:t)
 pathctl load $ZDOTDIR/.env >/dev/null 2>&1
 
 command -v brew >/dev/null 2>&1 && eval "$(/opt/homebrew/bin/brew shellenv)"
-command -v mise >/dev/null 2>&1 && eval "$(mise activate)"
+command -v mise >/dev/null 2>&1 && eval "$(mise activate --shims)"
 
 GENCOMP_DIR=$XDG_CONFIG_HOME/zsh/completions
 

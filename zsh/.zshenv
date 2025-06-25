@@ -21,4 +21,3 @@ export CHTSH=~/.config/cht.sh
 export PATH=$ZDOTDIR/bin:$PATH
 
 export ENVFILEPATH=$ZDOTDIR/env
-
