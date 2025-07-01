@@ -21,3 +21,5 @@ export CHTSH=~/.config/cht.sh
 export PATH=$ZDOTDIR/bin:$PATH
 
 export ENVFILEPATH=$ZDOTDIR/env
+
+[ -f $HOME/.zshenv.local ] && source $HOME/.zshenv.local
