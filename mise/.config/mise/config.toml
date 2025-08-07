@@ -1,0 +1,17 @@
+[tools]
+bat = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+rg = "latest"
+usage = "latest"
+watchexec = "latest"
+buf = "latest"
+neovim = "latest"
+go = "latest"
+node = "latest"
+
+[env]
+
+[settings]
+go_set_goroot = false

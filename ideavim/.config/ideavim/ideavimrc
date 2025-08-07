@@ -5,8 +5,8 @@ let mapleader = " "
 
 set timeoutlen=2000
 set clipboard=unnamed
-set number              " Show number
-set relativenumber      " Show relative number
+" set number              " Show number
+" set relativenumber      " Show relative number
 
 
 " Settings
@@ -27,18 +27,18 @@ set sneak
 " set quickscope
 
 " Plugins
-Plug 'machakann/vim-highlightedyank'
-Plug 'tpope/vim-commentary'
-Plug 'vim-scripts/ReplaceWithRegister'
-Plug 'preservim/nerdtree'
-Plug 'tommcdo/vim-exchange'
-Plug 'easymotion/vim-easymotion'
-Plug 'tpope/vim-surround'
-Plug 'terryma/vim-multiple-cursors'
-Plug 'kana/vim-textobj-entire'                                  " e text object == entire buffer
-Plug 'vim-scripts/argtextobj.vim'                               " args text object daa = delete around args, cia change insert args
-Plug 'michaeljsmith/vim-indent-object'                          " ai or ii
-Plug 'dbakker/vim-paragraph-motion'                             " '{' or '}' enhance
+" Plug 'machakann/vim-highlightedyank'
+" Plug 'tpope/vim-commentary'
+" Plug 'vim-scripts/ReplaceWithRegister'
+" Plug 'preservim/nerdtree'
+" Plug 'tommcdo/vim-exchange'
+" Plug 'easymotion/vim-easymotion'
+" Plug 'tpope/vim-surround'
+" Plug 'terryma/vim-multiple-cursors'
+" Plug 'kana/vim-textobj-entire'                                  " e text object == entire buffer
+" Plug 'vim-scripts/argtextobj.vim'                               " args text object daa = delete around args, cia change insert args
+" Plug 'michaeljsmith/vim-indent-object'                          " ai or ii
+" Plug 'dbakker/vim-paragraph-motion'                             " '{' or '}' enhance
 
 
 " Plugins Configuration
@@ -165,14 +165,3 @@ map <leader>gtd <Action>($TranslateDocumentationAction)
 vmap <leader>gt <Action>($EditorTranslateAction)
 
 nnoremap gD :action GotoTypeDeclaration<cr>
-
-" Plugins Mappings
-map <c-t>   :NERDTree<cr>
-
-map F <Plug>(easymotion-s)
-map f <Plug>(easymotion-f)
-
-nmap cx <Plug>(Exchange)
-xmap X <Plug>(Exchange)
-nmap cxc <Plug>(ExchangeClear)
-nmap cxx <Plug>(ExchangeLine)

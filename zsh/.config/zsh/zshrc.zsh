@@ -41,7 +41,6 @@ zstyle ':completion:*' sort false # disable sort completions
 zstyle ':completion:*:exa' sort false
 zstyle ':completion:files' sort false
 
-command -v nvim >/dev/null && export EDITOR=nvim || export EDITOR=vim
 
 # 加强版通配符
 setopt EXTENDED_GLOB
@@ -66,6 +65,7 @@ pathctl load $ZDOTDIR/.env >/dev/null 2>&1
 
 command -v brew >/dev/null 2>&1 && eval "$(/opt/homebrew/bin/brew shellenv)"
 command -v mise >/dev/null 2>&1 && eval "$(mise activate)"
+command -v nvim >/dev/null 2>&1 && export EDITOR=nvim || export EDITOR=vim
 
 GENCOMP_DIR=$XDG_CONFIG_HOME/zsh/completions
 
