@@ -1,0 +1,6 @@
+[tools]
+go = "latest"
+node = "latest"
+
+[settings]
+go_set_goroot = false
