@@ -27,10 +27,10 @@ USAGE: pathctl <command> [options]
 
 COMMANDS:
   put [path] [-c config]  Add path (default: ., config: paths)
-  remove <path>           Remove path from all configs
+  remove <path>           Remove path from configs and PATH
   list, ls                List managed paths with status
   activate                Activate shell integration
-  deactivate              Deactivate (after activation only)
+  deactivate              Deactivate and remove pathctl paths
   config                  Show configuration info
   help, -h, --help        Show help
 
@@ -328,10 +328,6 @@ list_paths() {
 }
 
 generate_activation() {
-    if [[ -n "${__PATHCTL_ORIG_PATH:-}" ]]; then
-        return 0
-    fi
-    
     local paths
     local new_paths=()
     
@@ -346,6 +342,7 @@ generate_activation() {
                 continue
             fi
             
+            # Only add paths that are not already in current PATH
             if ! is_in_current_path "$item_path"; then
                 new_paths+=("$expanded_path")
             fi
@@ -361,10 +358,7 @@ generate_activation() {
     
     pathctl_script_path=$(cd "$(dirname "$pathctl_script_path")" && pwd)/$(basename "$pathctl_script_path")
     
-    cat << EOF
-export __PATHCTL_ORIG_PATH="\$PATH"
-export __PATHCTL_SCRIPT="$pathctl_script_path"
-EOF
+    echo "export __PATHCTL_SCRIPT=\"$pathctl_script_path\""
     
     if [[ ${#new_paths[@]} -gt 0 ]]; then
         local reversed_paths=()
@@ -385,41 +379,30 @@ pathctl() {
     case "${1:-}" in
         activate)
             echo "pathctl is already activated" >&2
-            echo "Use 'pathctl reload' to refresh configuration" >&2  
-            echo "Use 'pathctl deactivate' to deactivate first" >&2
             return 1
             ;;
         deactivate)
-            if [[ -n "${__PATHCTL_ORIG_PATH:-}" ]]; then
-                export PATH="$__PATHCTL_ORIG_PATH"
-                unset __PATHCTL_ORIG_PATH __PATHCTL_SCRIPT
-                unset -f pathctl
-                echo "pathctl deactivated"
-            else
-                echo "pathctl is not active"
-            fi
-            ;;
-        reload)
             if [[ -n "${__PATHCTL_SCRIPT:-}" ]]; then
-                export PATH="$__PATHCTL_ORIG_PATH"
-                unset __PATHCTL_ORIG_PATH
-                eval "$("$__PATHCTL_SCRIPT" activate)"
-                echo "pathctl reloaded"
+                eval "$("$__PATHCTL_SCRIPT" deactivate)"
             else
                 echo "pathctl is not active"
             fi
             ;;
-        put|remove)
+        put)
             if [[ -n "${__PATHCTL_SCRIPT:-}" ]]; then
                 if "$__PATHCTL_SCRIPT" "$@"; then
-                    local orig_path="$__PATHCTL_ORIG_PATH"
-                    export PATH="$orig_path"
-                    unset __PATHCTL_ORIG_PATH
                     eval "$("$__PATHCTL_SCRIPT" activate)"
-                    return 0
-                else
-                    return $?
                 fi
+            else
+                command pathctl "$@" 2>/dev/null || {
+                    echo "pathctl: command not found" >&2
+                    return 127
+                }
+            fi
+            ;;
+        remove)
+            if [[ -n "${__PATHCTL_SCRIPT:-}" ]]; then
+                eval "$("$__PATHCTL_SCRIPT" "$@")"
             else
                 command pathctl "$@" 2>/dev/null || {
                     echo "pathctl: command not found" >&2
@@ -441,6 +424,7 @@ pathctl() {
 }
 EOF
 }
+
 show_config() {
     local files path_count active_count=0 paths
     echo "pathctl v$PATHCTL_VERSION"
@@ -467,6 +451,15 @@ show_config() {
         print_success "pathctl is active ($active_count/$path_count paths in current PATH)"
     else
         print_info "pathctl is not active (run 'eval \"\$(pathctl activate)\"' to activate)"
+    fi
+    
+    # Check if PATH looks complete
+    local path_entries
+    path_entries=$(echo "$PATH" | tr ':' '\n' | wc -l | tr -d ' ')
+    echo "Current PATH has $path_entries entries"
+    if command -v mise >/dev/null 2>&1 && [[ "$PATH" != *"mise"* ]]; then
+        print_warning "mise is installed but PATH may be incomplete"
+        echo "Consider running: exec \$SHELL or source ~/.zshrc"
     fi
 }
 main() {
@@ -515,7 +508,28 @@ main() {
                 print_error "remove command requires a path argument"
                 return 1
             fi
-            remove_path_from_configs "$1"
+            
+            local target_path="$1"
+            
+            # Delete from config
+            remove_path_from_configs "$target_path" >/dev/null 2>&1
+            
+            # Get all possible path formats to match
+            local normalized_path expanded_path
+            normalized_path=$(normalize_path "$target_path")
+            expanded_path=$(expand_path "$normalized_path")
+            
+            echo "new_path=\"\""
+            echo "for path_entry in \`echo \"\$PATH\" | tr ':' '\n'\`; do"
+            echo "    if [[ \"\$path_entry\" != \"$target_path\" && \"\$path_entry\" != \"$normalized_path\" && \"\$path_entry\" != \"$expanded_path\" ]]; then"
+            echo "        if [[ -z \"\$new_path\" ]]; then"
+            echo "            new_path=\"\$path_entry\""
+            echo "        else"
+            echo "            new_path=\"\$new_path:\$path_entry\""
+            echo "        fi"
+            echo "    fi"
+            echo "done"
+            echo "export PATH=\"\$new_path\""
             ;;
             
         list|ls)
@@ -527,9 +541,36 @@ main() {
             ;;
             
         deactivate)
-            print_error "pathctl is not active"
-            print_info "Use 'eval \"\$(pathctl activate)\"' to activate first, then use 'pathctl deactivate'"
-            return 1
+            # Generate deactivate code
+            local paths
+            paths=$(get_all_paths)
+            
+            echo "new_path=\"\""
+            echo "for path_entry in \`echo \"\$PATH\" | tr ':' '\n'\`; do"
+            echo "    should_keep=true"
+            
+            while IFS= read -r managed_path; do
+                if [[ -n "$managed_path" ]]; then
+                    local expanded_path
+                    expanded_path=$(expand_path "$managed_path")
+                    echo "    if [[ \"\$path_entry\" == \"$expanded_path\" ]]; then"
+                    echo "        should_keep=false"
+                    echo "    fi"
+                fi
+            done <<< "$paths"
+            
+            echo "    if [[ \"\$should_keep\" == \"true\" && -n \"\$path_entry\" ]]; then"
+            echo "        if [[ -z \"\$new_path\" ]]; then"
+            echo "            new_path=\"\$path_entry\""
+            echo "        else"
+            echo "            new_path=\"\$new_path:\$path_entry\""
+            echo "        fi"
+            echo "    fi"
+            echo "done"
+            echo "export PATH=\"\$new_path\""
+            echo "unset __PATHCTL_SCRIPT"
+            echo "unset -f pathctl"
+            echo "echo \"pathctl deactivated\""
             ;;
             
         config)
