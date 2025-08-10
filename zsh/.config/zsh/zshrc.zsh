@@ -61,7 +61,7 @@ source $ZDOTDIR/zinit/bin/zinit.zsh
 FPATH=$XDG_CONFIG_HOME/zsh/functions:"$XDG_CONFIG_HOME/zsh/completions":$FPATH
 autoload -Uz $XDG_CONFIG_HOME/zsh/functions/*(:t)
 
-pathctl load $ZDOTDIR/.env >/dev/null 2>&1
+eval "$(pathctl activate)"
 
 command -v brew >/dev/null 2>&1 && eval "$(/opt/homebrew/bin/brew shellenv)"
 command -v mise >/dev/null 2>&1 && eval "$(mise activate)"
