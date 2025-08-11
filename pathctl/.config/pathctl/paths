@@ -1,0 +1,4 @@
+/opt/homebrew/bin
+$HOME/.local/bin
+$HOME/.local/cargo/bin
+$HOME/.local/go/bin
