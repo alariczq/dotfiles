@@ -1,9 +1,0 @@
-[tools]
-bat = "latest"
-eza = "latest"
-fd = "latest"
-fzf = "latest"
-rg = "latest"
-usage = "latest"
-watchexec = "latest"
-neovim = "latest"
