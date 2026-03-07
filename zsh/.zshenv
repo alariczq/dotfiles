@@ -14,8 +14,6 @@ export CHTSH=~/.config/cht.sh
 
 export PATH=$ZDOTDIR/bin:$PATH
 
-export GOPATH=$HOME/.local/go
-export GOBIN=$GOPATH/bin
 export RUSTUP_HOME=$HOME/.local/rustup
 export CARGO_HOME=$HOME/.local/cargo
 

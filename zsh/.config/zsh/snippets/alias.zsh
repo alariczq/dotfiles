@@ -16,7 +16,8 @@ alias df='df -h'  	du='du -h'  plast="last -20"
 alias cp='cp -v'   	mv='mv -v'
 alias ts='date +%s'
 alias v='nvim'
-alias c='claude -p'
+alias oc='opencode'
+alias cc='claude'
 
 alias Sudo='command sudo '
 
