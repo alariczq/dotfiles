@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 7,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-6",
+    "BASH_DEFAULT_TIMEOUT_MS": "300000",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "true"
+  },
+  "includeGitInstructions": false,
+  "permissions": {
+    "allow": [
+      "Bash(gh repo view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh api:*)",
+      "Bash(cargo:*)",
+      "Bash(go:*)",
+      "Bash(python3:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker images:*)",
+      "Bash(docker inspect:*)",
+      "Bash(dhsctl:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx eslint:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.rs)",
+      "WebFetch(domain:pkg.go.dev)",
+      "WebFetch(domain:crates.io)",
+      "WebFetch(domain:platform.claude.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:deepwiki.com)",
+      "mcp__ide",
+      "mcp__plugin_context7_context7",
+      "mcp__db-mcp-server"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(cargo publish:*)",
+      "Bash(npm publish:*)",
+      "Bash(rm -rf:*)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/*credential*)",
+      "Read(**/*token*)",
+      "Read(**/.ssh/*)",
+      "Read(**/.gnupg/*)",
+      "Read(**/.aws/*)",
+      "Read(**/.kube/*)",
+      "Read(**/.config/gh/*)",
+      "Read(**/.git-credentials)",
+      "Read(**/.netrc)"
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/alaric/.local/go/bin/comment-checker"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/notify.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/notify.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
+  },
+  "sandbox": {
+    "enabled": true,
+    "network": {
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "denyWrite": [
+        "~/.ssh",
+        "~/.gnupg",
+        "~/.aws",
+        "~/.kube",
+        "~/.config/gh"
+      ],
+      "denyRead": [
+        ".env",
+        ".env.*",
+        "~/.ssh",
+        "~/.gnupg",
+        "~/.aws",
+        "~/.kube",
+        "~/.docker/config.json",
+        "~/.config/gh",
+        "~/.config/gcloud",
+        "~/.git-credentials",
+        "~/.gitconfig",
+        "~/.netrc",
+        "~/.npmrc",
+        "~/.pypirc",
+        "~/.cargo/credentials.toml",
+        "~/.zsh_history",
+        "~/.bash_history",
+        "~/.node_repl_history",
+        "~/.python_history",
+        "~/Library/Keychains"
+      ]
+    },
+    "excludedCommands": [
+      "docker",
+      "gh",
+      "go",
+      "cargo",
+      "npm",
+      "npx"
+    ]
+  },
+  "alwaysThinkingEnabled": true,
+  "plansDirectory": ".claude/plans",
+  "autoMemoryEnabled": true,
+  "effortLevel": "high",
+  "model": "opusplan"
+}
