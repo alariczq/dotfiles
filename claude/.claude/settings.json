@@ -43,7 +43,6 @@
       "Bash(git reset --hard:*)",
       "Bash(cargo publish:*)",
       "Bash(npm publish:*)",
-      "Bash(rm -rf:*)",
       "Read(.env)",
       "Read(.env.*)",
       "Read(~/.ssh/*)",
