@@ -43,9 +43,6 @@ completions=(
 
   nocd
     OMZP::docker/completions/_docker
-
-  nocd mv=":zsh -> _cht" 
-    https://cheat.sh/:zsh
 )
 
 keybinds=(
