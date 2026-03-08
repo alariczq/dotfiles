@@ -85,6 +85,3 @@ plugins=(
   Aloxaf/gencomp
 )
 
-programs=(
-)
-
