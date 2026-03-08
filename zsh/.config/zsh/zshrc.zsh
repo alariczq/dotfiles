@@ -86,7 +86,6 @@ zinit lucid nocd light-mode for $snippets
 zinit lucid nocd light-mode for $keybinds
 zinit lucid as"completion" for $completions
 zinit wait lucid depth"1" nocd light-mode for $plugins
-zinit lucid light-mode for $programs
 
 # source $ZDOTDIR/.p10k.zsh
 zinit depth"1 " nocd light-mode for romkatv/powerlevel10k
