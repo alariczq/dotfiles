@@ -1,0 +1,28 @@
+[tools]
+bat = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+rg = "latest"
+jq = "latest"
+watchexec = "latest"
+usage = "latest"
+
+buf = "latest"
+bun = "1.3.9"
+go = "1.26.0"
+neovim = "latest"
+k6 = "latest"
+node = "22.22.0"
+pnpm = "10.29.1"
+uv = "latest"
+
+[settings]
+experimental = true
+lockfile = true
+go_set_goroot = false
+idiomatic_version_file_enable_tools = ["rust"]
+
+[env]
+GOPATH = "{{env.HOME}}/.local/go"
+GOBIN = "{{env.GOPATH}}/bin"
