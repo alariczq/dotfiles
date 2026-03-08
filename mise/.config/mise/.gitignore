@@ -1,5 +1,3 @@
 *
 !**/.gitignore
-!conf.d/
-!conf.d/config.toml
-!conf.d/config.command_line_tools.toml
+!config.toml
