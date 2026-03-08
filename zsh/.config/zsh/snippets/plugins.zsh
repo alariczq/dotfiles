@@ -86,7 +86,5 @@ plugins=(
 )
 
 programs=(
-  as="program" id-as="cht.sh" pick"cht.sh" 
-    https://cht.sh/:cht.sh
 )
 
