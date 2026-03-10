@@ -1,0 +1,58 @@
+# ===== Theme =====
+theme = "Catppuccin Mocha"
+
+# ===== Font =====
+font-family = "Maple Mono NF Medium"
+font-size = 15
+font-thicken = false
+adjust-cell-height = 20%
+
+# ===== Window =====
+window-padding-x = 10
+window-padding-y = 8
+window-padding-balance = true
+macos-titlebar-style = tabs
+macos-titlebar-proxy-icon = hidden
+window-save-state = always
+
+# ===== Visual Effects =====
+background-opacity = 0.95
+background-blur = true
+unfocused-split-opacity = 1 
+minimum-contrast = 1.1
+
+# ===== Cursor =====
+cursor-style = bar
+cursor-style-blink = false
+
+# ===== Mouse & Links =====
+mouse-hide-while-typing = true
+link-url = true
+
+# ===== Clipboard =====
+copy-on-select = clipboard
+clipboard-trim-trailing-spaces = true
+
+# ===== Shell Integration =====
+shell-integration = detect
+shell-integration-features = cursor,sudo,title,ssh-terminfo,ssh-env
+
+# ===== Quick Terminal =====
+quick-terminal-position = top
+quick-terminal-screen = mouse
+quick-terminal-size = 40%
+quick-terminal-animation-duration = 0
+quick-terminal-autohide = true
+
+# ===== Behavior =====
+confirm-close-surface = false
+macos-option-as-alt = true
+scrollback-limit = 10000000
+
+# ===== Performance =====
+window-vsync = false
+
+# ===== Keybindings =====
+keybind = global:cmd+backslash=toggle_quick_terminal
+keybind = super+d=new_split:right
+keybind = super+shift+enter=toggle_split_zoom
