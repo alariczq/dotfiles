@@ -3,46 +3,47 @@
   "cleanupPeriodDays": 7,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
-    "BASH_DEFAULT_TIMEOUT_MS": "300000"
+    "BASH_DEFAULT_TIMEOUT_MS": "300000",
+    "ENABLE_CLAUDEAI_MCP_SERVERS": "false"
   },
   "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "WebFetch",
       "WebSearch",
+      "Bash(go *)",
+      "Bash(cargo *)",
+      "Bash(python3 *)",
+      "Bash(docker ps *)",
+      "Bash(docker logs *)",
+      "Bash(docker images *)",
+      "Bash(docker inspect *)",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(gh repo view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(gh api *)",
+      "Bash(dhsctl *)",
       "mcp__ide",
-      "mcp__plugin_context7_context7",
-      "Bash(go:*)",
-      "Bash(cargo:*)",
-      "Bash(python3:*)",
-      "Bash(docker ps:*)",
-      "Bash(docker logs:*)",
-      "Bash(docker images:*)",
-      "Bash(docker inspect:*)",
-      "Bash(npm run:*)",
-      "Bash(npm test:*)",
-      "Bash(npm install:*)",
-      "Bash(npx tsc:*)",
-      "Bash(npx prettier:*)",
-      "Bash(npx eslint:*)",
-      "Bash(gh repo view:*)",
-      "Bash(gh pr list:*)",
-      "Bash(gh pr view:*)",
-      "Bash(gh pr diff:*)",
-      "Bash(gh pr checks:*)",
-      "Bash(gh issue list:*)",
-      "Bash(gh issue view:*)",
-      "Bash(gh run list:*)",
-      "Bash(gh run view:*)",
-      "Bash(gh api:*)",
-      "Bash(dhsctl:*)"
+      "mcp__plugin_context7_context7"
     ],
     "deny": [
-      "Bash(git push:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(cargo publish:*)",
-      "Bash(npm publish:*)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(cargo publish *)",
+      "Bash(npm publish *)",
       "Read(.env)",
       "Read(.env.*)",
       "Read(~/.ssh/*)",
@@ -63,7 +64,6 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "model": "opusplan",
   "hooks": {
     "PostToolUse": [
       {
@@ -71,27 +71,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/alaric/.local/go/bin/comment-checker"
+            "command": "~/.local/go/bin/comment-checker"
           }
         ]
       }
     ],
-    "Stop": [
+    "PreToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/notify.sh"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/notify.sh"
+            "command": "~/.claude/hooks/rtk-rewrite.sh"
           }
         ]
       }
@@ -103,7 +94,9 @@
   },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
-    "ast-grep@ast-grep-marketplace": true
+    "ast-grep@ast-grep-marketplace": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "ast-grep-marketplace": {
@@ -113,18 +106,22 @@
       }
     }
   },
+  "language": "中文",
   "sandbox": {
     "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
     "network": {
+      "allowedDomains": [
+        "index.crates.io"
+      ],
       "allowLocalBinding": true
     },
     "filesystem": {
       "allowWrite": [
-        "~/.local/go/pkg/mod",
-        "~/Library/Caches/go-build",
-        "~/.local/cargo/registry",
-        "~/.local/cargo/git",
-        "~/.npm"
+        "~/.local/cargo",
+        "~/.local/go",
+        "~/Library/Caches/Mozilla.sccache"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -158,15 +155,12 @@
     "enableWeakerNetworkIsolation": true,
     "excludedCommands": [
       "docker",
-      "gh",
-      "go",
       "cargo",
-      "npm",
-      "npx",
-      "python3"
+      "go"
     ]
   },
   "plansDirectory": ".claude/plans",
+  "voiceEnabled": false,
   "autoMemoryEnabled": true,
-  "effortLevel": "medium"
+  "model": "opusplan"
 }
