@@ -12,6 +12,7 @@ window-padding-x = 10
 window-padding-y = 8
 window-padding-balance = true
 macos-titlebar-style = tabs
+macos-icon = xray
 macos-titlebar-proxy-icon = hidden
 window-save-state = always
 
@@ -22,8 +23,8 @@ unfocused-split-opacity = 1
 minimum-contrast = 1.1
 
 # ===== Cursor =====
-cursor-style = bar
-cursor-style-blink = false
+cursor-style = block
+cursor-style-blink = true
 
 # ===== Mouse & Links =====
 mouse-hide-while-typing = true

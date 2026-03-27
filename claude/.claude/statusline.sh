@@ -20,7 +20,7 @@ format_tokens() {
   local tokens=$1
   if [ "$tokens" -ge 1000000 ]; then
     local m=$((tokens / 1000000))
-    local r=$(( (tokens % 1000000) / 100000 ))
+    local r=$(((tokens % 1000000) / 100000))
     [ "$r" -gt 0 ] && echo "${m}.${r}M" || echo "${m}M"
   elif [ "$tokens" -ge 1000 ]; then
     echo "$((tokens / 1000))k"
@@ -58,10 +58,11 @@ progress_bar() {
   local pct=$1 width=${2:-8}
   local filled=$((pct * width / 100))
   [ "$filled" -gt "$width" ] && filled=$width
+  [ "$pct" -gt 0 ] && [ "$filled" -eq 0 ] && filled=1
   local empty=$((width - filled))
   local bar=""
   [ "$filled" -gt 0 ] && printf -v f "%${filled}s" "" && bar="${LIGHT_BLUE}${f// /█}${RESET}"
-  [ "$empty" -gt 0 ] && printf -v e "%${empty}s" "" && bar+="${SLATE}${e// /█}${RESET}"
+  [ "$empty" -gt 0 ] && printf -v e "%${empty}s" "" && bar+="${SLATE}${e// /🮖}${RESET}"
   echo "$bar"
 }
 
@@ -131,9 +132,9 @@ statusline() {
       .cost.total_lines_removed // 0,
       .cost.total_duration_ms // 0,
       .context_window.context_window_size // 0,
-      .rate_limits.five_hour.used_percentage // -1,
+      (.rate_limits.five_hour.used_percentage // -1 | round),
       .rate_limits.five_hour.resets_at // 0,
-      .rate_limits.seven_day.used_percentage // -1,
+      (.rate_limits.seven_day.used_percentage // -1 | round),
       .rate_limits.seven_day.resets_at // 0,
       (if .exceeds_200k_tokens then 1 else 0 end)
     ] | @tsv'
