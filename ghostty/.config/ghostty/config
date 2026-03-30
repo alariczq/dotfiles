@@ -48,7 +48,7 @@ quick-terminal-autohide = true
 # ===== Behavior =====
 confirm-close-surface = false
 macos-option-as-alt = true
-scrollback-limit = 10000000
+scrollback-limit = 100000000
 
 # ===== Performance =====
 window-vsync = false
