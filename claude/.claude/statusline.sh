@@ -9,6 +9,7 @@ readonly MAGENTA='\033[35m'
 readonly CYAN='\033[36m'
 readonly LIGHT_BLUE='\033[38;2;147;185;224m'
 readonly SLATE='\033[38;2;75;90;115m'
+readonly SLATE_BG='\033[48;2;75;90;115m'
 readonly RESET='\033[0m'
 
 format_path() {
@@ -56,13 +57,19 @@ context_color() {
 
 progress_bar() {
   local pct=$1 width=${2:-8}
-  local filled=$((pct * width / 100))
-  [ "$filled" -gt "$width" ] && filled=$width
-  [ "$pct" -gt 0 ] && [ "$filled" -eq 0 ] && filled=1
-  local empty=$((width - filled))
+  local partials=(▏ ▎ ▍ ▌ ▋ ▊ ▉)
+  local total_units=$((pct * width * 8 / 100))
+  [ "$total_units" -gt $((width * 8)) ] && total_units=$((width * 8))
+  [ "$pct" -gt 0 ] && [ "$total_units" -eq 0 ] && total_units=1
+  local full=$((total_units / 8))
+  local frac=$((total_units % 8))
+  local pw=0
+  [ "$frac" -gt 0 ] && pw=1
+  local empty=$((width - full - pw))
   local bar=""
-  [ "$filled" -gt 0 ] && printf -v f "%${filled}s" "" && bar="${LIGHT_BLUE}${f// /█}${RESET}"
-  [ "$empty" -gt 0 ] && printf -v e "%${empty}s" "" && bar+="${SLATE}${e// /🮖}${RESET}"
+  [ "$full" -gt 0 ] && printf -v f "%${full}s" "" && bar="${LIGHT_BLUE}${f// /█}${RESET}"
+  [ "$frac" -gt 0 ] && bar+="${LIGHT_BLUE}${SLATE_BG}${partials[$((frac - 1))]}${RESET}"
+  [ "$empty" -gt 0 ] && printf -v e "%${empty}s" "" && bar+="${SLATE}${e// /█}${RESET}"
   echo "$bar"
 }
 
