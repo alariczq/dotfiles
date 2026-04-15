@@ -1,33 +1,99 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "300000",
-    "CLAUDE_CODE_NO_FLICKER": "1",
-    "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
+    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
+    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NEW_INIT": "true",
-    "ENABLE_CLAUDEAI_MCP_SERVERS": "false",
-    "ENABLE_TOOL_SEARCH": "true"
+    "CLAUDE_CODE_RESUME_INTERRUPTED_TURN": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "WebFetch",
       "WebSearch",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(file *)",
+      "Bash(stat *)",
+      "Bash(du *)",
+      "Bash(df *)",
+      "Bash(which *)",
+      "Bash(whoami)",
+      "Bash(uname *)",
+      "Bash(date *)",
+      "Bash(date)",
+      "Bash(hostname)",
+      "Bash(id)",
+      "Bash(uptime)",
+      "Bash(pwd)",
+      "Bash(env)",
+      "Bash(echo *)",
+      "Bash(printf *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(awk *)",
+      "Bash(sed *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(cut *)",
+      "Bash(tr *)",
+      "Bash(diff *)",
+      "Bash(xargs *)",
+      "Bash(jq *)",
+      "Bash(yq *)",
+      "Bash(ps *)",
+      "Bash(pgrep *)",
+      "Bash(lsof *)",
+      "Bash(tree *)",
+      "Bash(realpath *)",
+      "Bash(readlink *)",
+      "Bash(basename *)",
+      "Bash(dirname *)",
+      "Bash(sha256sum *)",
+      "Bash(md5 *)",
+      "Bash(base64 *)",
       "Bash(go *)",
       "Bash(cargo *)",
       "Bash(python3 *)",
+      "Bash(node *)",
+      "Bash(make *)",
+      "Bash(cmake *)",
+      "Bash(gcc *)",
+      "Bash(g++ *)",
+      "Bash(clang *)",
       "Bash(docker ps *)",
       "Bash(docker logs *)",
       "Bash(docker images *)",
       "Bash(docker inspect *)",
+      "Bash(docker compose *)",
       "Bash(npm run *)",
       "Bash(npm test *)",
       "Bash(npm install *)",
-      "Bash(npx tsc *)",
-      "Bash(npx prettier *)",
-      "Bash(npx eslint *)",
+      "Bash(npx *)",
+      "Bash(pnpm *)",
+      "Bash(yarn *)",
+      "Bash(bun *)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git branch)",
+      "Bash(git tag *)",
+      "Bash(git stash *)",
+      "Bash(git blame *)",
+      "Bash(git rev-parse *)",
+      "Bash(git remote -v)",
+      "Bash(git ls-files *)",
       "Bash(gh repo view *)",
       "Bash(gh pr list *)",
       "Bash(gh pr view *)",
@@ -43,11 +109,8 @@
       "mcp__plugin_context7_context7"
     ],
     "deny": [
-      "Bash(git push)",
-      "Bash(git push *)",
       "Bash(git reset --hard *)",
       "Bash(cargo publish *)",
-      "Bash(npm publish *)",
       "Read(.env)",
       "Read(.env.*)",
       "Read(~/.ssh/*)",
@@ -65,147 +128,24 @@
       "Read(~/.zsh_history)",
       "Read(~/.bash_history)",
       "Read(~/Library/Keychains/*)"
-    ]
+    ],
+    "defaultMode": "default"
   },
   "hooks": {
-    "Notification": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py",
-            "timeout": 86400
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.local/go/bin/comment-checker"
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      },
-      {
-        "matcher": "manual",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/claude-island-state.py"
-          }
-        ]
-      }
-    ]
+    "PreToolUse": []
   },
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/statusline.sh"
+    "command": "~/.claude/statusline.sh",
+    "refreshInterval": 5
   },
   "enabledPlugins": {
-    "ast-grep@ast-grep-marketplace": true,
-    "clangd-lsp@claude-plugins-official": true,
     "codex@openai-codex": true,
     "context7@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true
+    "rust-analyzer-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "ast-grep-marketplace": {
@@ -279,10 +219,11 @@
       "go"
     ]
   },
-  "effortLevel": "medium",
-  "voiceEnabled": true,
-  "prefersReducedMotion": true,
+  "effortLevel": "high",
+  "voiceEnabled": false,
   "autoMemoryEnabled": true,
   "autoDreamEnabled": true,
+  "showThinkingSummaries": true,
+  "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true
 }
