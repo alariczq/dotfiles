@@ -20,9 +20,20 @@ format_path() {
 format_tokens() {
   local tokens=$1
   if [ "$tokens" -ge 1000000 ]; then
-    local m=$((tokens / 1000000))
-    local r=$(((tokens % 1000000) / 100000))
-    [ "$r" -gt 0 ] && echo "${m}.${r}M" || echo "${m}M"
+    local hundredths=$(((tokens + 5000) / 10000))
+    printf "%d.%02dM" "$((hundredths / 100))" "$((hundredths % 100))"
+  elif [ "$tokens" -ge 1000 ]; then
+    local hundredths=$(((tokens + 5) / 10))
+    printf "%d.%02dk" "$((hundredths / 100))" "$((hundredths % 100))"
+  else
+    echo "$tokens"
+  fi
+}
+
+format_tokens_coarse() {
+  local tokens=$1
+  if [ "$tokens" -ge 1000000 ]; then
+    echo "$((tokens / 1000000))M"
   elif [ "$tokens" -ge 1000 ]; then
     echo "$((tokens / 1000))k"
   else
@@ -53,6 +64,14 @@ context_color() {
   [ "$active" -eq 0 ] && echo "$GREY" && return
   [ "$pct" -ge 50 ] && echo "$GREEN" && return
   [ "$pct" -ge 25 ] && echo "$YELLOW" || echo "$RED"
+}
+
+
+usage_color() {
+  local pct=$1
+  [ "$pct" -lt 75 ] && echo "$GREY" && return
+  [ "$pct" -lt 90 ] && echo "$YELLOW" && return
+  echo "$RED"
 }
 
 progress_bar() {
@@ -127,9 +146,9 @@ git_status() {
 
 statusline() {
   local input=$(cat)
-  local dir model remaining cents added removed duration win_size rl5_pct rl5_reset rl7_pct rl7_reset exceeds_200k
+  local dir model remaining cents added removed duration win_size rl5_pct rl5_reset rl7_pct rl7_reset exceeds_200k tok_in tok_out tok_cw tok_cr
 
-  IFS=$'\t' read -r dir model remaining cents added removed duration win_size rl5_pct rl5_reset rl7_pct rl7_reset exceeds_200k < <(
+  IFS=$'\t' read -r dir model remaining cents added removed duration win_size rl5_pct rl5_reset rl7_pct rl7_reset exceeds_200k tok_in tok_out tok_cw tok_cr < <(
     echo "$input" | jq -r '[
       .workspace.current_dir // "~",
       .model.display_name // "Unknown",
@@ -143,7 +162,11 @@ statusline() {
       .rate_limits.five_hour.resets_at // 0,
       (.rate_limits.seven_day.used_percentage // -1 | round),
       .rate_limits.seven_day.resets_at // 0,
-      (if .exceeds_200k_tokens then 1 else 0 end)
+      (if .exceeds_200k_tokens then 1 else 0 end),
+      .context_window.current_usage.input_tokens // 0,
+      .context_window.current_usage.output_tokens // 0,
+      .context_window.current_usage.cache_creation_input_tokens // 0,
+      .context_window.current_usage.cache_read_input_tokens // 0
     ] | @tsv'
   )
 
@@ -158,6 +181,10 @@ statusline() {
   [[ ! "$rl7_pct" =~ ^-?[0-9]+$ ]] && rl7_pct=-1
   [[ ! "$rl7_reset" =~ ^[0-9]+$ ]] && rl7_reset=0
   [[ ! "$exceeds_200k" =~ ^[0-9]+$ ]] && exceeds_200k=0
+  [[ ! "$tok_in" =~ ^[0-9]+$ ]] && tok_in=0
+  [[ ! "$tok_out" =~ ^[0-9]+$ ]] && tok_out=0
+  [[ ! "$tok_cw" =~ ^[0-9]+$ ]] && tok_cw=0
+  [[ ! "$tok_cr" =~ ^[0-9]+$ ]] && tok_cr=0
 
   local minutes=$((duration / 1000 / 60))
   local active=0
@@ -169,30 +196,39 @@ statusline() {
   local win_label=""
   if [ "$win_size" -gt 0 ]; then
     local used=$((win_size * (100 - remaining) / 100))
-    win_label=" ${GREY}($(format_tokens "$used")/$(format_tokens "$win_size"))${RESET}"
+    win_label=" ${GREY}($(format_tokens_coarse "$used")/$(format_tokens_coarse "$win_size"))${RESET}"
   fi
   out+=" ${GREY}·${RESET} ${ctx}left ${remaining}%${RESET}${win_label}"
+  [ "$exceeds_200k" -eq 1 ] && out+=" ${RED}[>200k]${RESET}"
 
   [ "$cents" -gt 0 ] && out+="${GREY} · \$$(printf "%d.%02d" $((cents / 100)) $((cents % 100)))${RESET}"
   [ "$minutes" -gt 0 ] && out+="${GREY} · $(format_duration "$duration")${RESET}"
-
   if [ "$added" -gt 0 ] || [ "$removed" -gt 0 ]; then
-    out+=" ${GREY}|${RESET} ${GREEN}+${added}${RESET}${GREY}/${RESET}${RED}-${removed}${RESET}"
+    out+=" ${GREY}·${RESET} ${GREEN}+${added}${RESET}${GREY}/${RESET}${RED}-${removed}${RESET}"
+  fi
+
+  if [ "$tok_cr" -gt 0 ] || [ "$tok_cw" -gt 0 ] || [ "$tok_in" -gt 0 ] || [ "$tok_out" -gt 0 ]; then
+    out+="\n${GREY}cache-r${RESET} ${GREEN}$(format_tokens "$tok_cr")${RESET}"
+    out+=" ${GREY}· cache-w${RESET} ${YELLOW}$(format_tokens "$tok_cw")${RESET}"
+    out+=" ${GREY}· in${RESET} $(format_tokens "$tok_in")"
+    out+=" ${GREY}· out${RESET} $(format_tokens "$tok_out")"
   fi
 
   if [ "$rl5_pct" -ge 0 ] || [ "$rl7_pct" -ge 0 ]; then
-    out+=" ${GREY}|${RESET}"
+    local line_rl=""
     if [ "$rl5_pct" -ge 0 ]; then
-      out+=" ${GREY}5h${RESET} $(progress_bar "$rl5_pct") ${GREY}${rl5_pct}%${RESET}"
-      [ "$rl5_reset" -gt 0 ] && out+=" ${GREY}↻$(format_reset "$rl5_reset")${RESET}"
+      local rl5c=$(usage_color "$rl5_pct")
+      line_rl+="${GREY}5h${RESET} $(progress_bar "$rl5_pct") ${rl5c}${rl5_pct}%${RESET}"
+      [ "$rl5_reset" -gt 0 ] && line_rl+=" ${GREY}↻$(format_reset "$rl5_reset")${RESET}"
     fi
     if [ "$rl7_pct" -ge 0 ]; then
-      out+=" ${GREY}7d${RESET} $(progress_bar "$rl7_pct") ${GREY}${rl7_pct}%${RESET}"
-      [ "$rl7_reset" -gt 0 ] && out+=" ${GREY}↻$(format_reset "$rl7_reset")${RESET}"
+      [ -n "$line_rl" ] && line_rl+=" ${GREY}|${RESET} "
+      local rl7c=$(usage_color "$rl7_pct")
+      line_rl+="${GREY}7d${RESET} $(progress_bar "$rl7_pct") ${rl7c}${rl7_pct}%${RESET}"
+      [ "$rl7_reset" -gt 0 ] && line_rl+=" ${GREY}↻$(format_reset "$rl7_reset")${RESET}"
     fi
+    out+="\n${line_rl}"
   fi
-
-  [ "$exceeds_200k" -eq 1 ] && out+=" ${RED}[>200k]${RESET}"
 
   echo "$out"
 }
