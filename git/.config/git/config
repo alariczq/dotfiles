@@ -1,6 +1,6 @@
 [user]
   email = imzhongqi@gmail.com
-  name = zhongqi
+  name = vika
 
 [url "git@github.com:"]
   insteadof = https://github.com/
@@ -10,3 +10,35 @@
 
 [core]
   editor = vim
+  pager = delta
+
+[interactive]
+  diffFilter = delta --color-only
+
+[delta]
+  navigate = true
+  dark = true
+  tabs = 4
+  syntax-theme = Catppuccin Mocha
+  file-style = "#cba6f7 bold"
+  file-decoration-style = "#45475a ul"
+  file-added-label = ""
+  file-removed-label = ""
+  file-modified-label = ""
+  file-renamed-label = ""
+  file-copied-label = ""
+  hunk-header-style = omit
+  minus-style = "syntax #44293A"
+  minus-emph-style = "bold syntax #6E3A3F"
+  plus-style = "syntax #2C3E36"
+  plus-emph-style = "bold syntax #3E5A47"
+  line-numbers = true
+  line-numbers-left-format = ""
+  line-numbers-right-format = "{np:>3} "
+  line-numbers-right-style = "#6c7086"
+  line-numbers-minus-style = "#f38ba8"
+  line-numbers-plus-style = "#a6e3a1"
+  line-numbers-zero-style = "#6c7086"
+
+[merge]
+  conflictstyle = zdiff3
