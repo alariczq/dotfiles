@@ -36,4 +36,3 @@ zle -N zce-jump-char
 keybindings[M-j]=zce-jump-char
 
 ebindkey -A keybindings
-

@@ -16,8 +16,9 @@ alias df='df -h'  	du='du -h'  plast="last -20"
 alias cp='cp -v'   	mv='mv -v'
 alias ts='date +%s'
 alias v='nvim'
-alias oc='caffeinate -isd opencode'
-alias cc='caffeinate -isd claude'
+alias oc='caffeinate -is opencode'
+alias cc='caffeinate -is claude'
+alias cx='caffeinate -is codex'
 alias c='cursor'
 
 alias Sudo='command sudo '
