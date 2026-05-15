@@ -28,10 +28,19 @@ fi
 is_stowed() {
   local pkg=$1
   local pkgdir="$DOTFILES/$pkg"
-  local -a files=("$pkgdir"/**/*(.DN))
-  local f
-  for f in $files; do
-    [[ -L "$HOME/${f#$pkgdir/}" ]] && return 0
+  local queue=("$pkgdir")
+  while (( ${#queue} )); do
+    local dir=$queue[1]; shift queue
+    local entry
+    for entry in "$dir"/*(DN) "$dir"/.*(DN); do
+      [[ ${entry:t} == (.|..) ]] && continue
+      local target="$HOME/${entry#$pkgdir/}"
+      if [[ -L $target ]]; then
+        [[ $(readlink $target) == */.dotfiles/$pkg/* ]] && return 0
+      elif [[ -d $entry && -d $target ]]; then
+        queue+=("$entry")
+      fi
+    done
   done
   return 1
 }
