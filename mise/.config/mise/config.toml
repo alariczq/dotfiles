@@ -4,6 +4,7 @@ eza = "latest"
 fd = { version = "latest", os = ["linux", "macos/arm64"] }
 fzf = "latest"
 rg = "latest"
+zoxide = "latest"
 jq = "latest"
 watchexec = "latest"
 usage = "latest"
