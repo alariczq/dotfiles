@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+PRESELECT=(mise zsh)
+
+# -- colors ----------------------------------------------------------------
+
+bold='\033[1m'  dim='\033[2m'  reset='\033[0m'
+green='\033[32m'  yellow='\033[33m'  cyan='\033[36m'
+
+# -- discover stow packages -----------------------------------------------
+
+packages=()
+for d in "$DOTFILES"/*/; do
+  name="$(basename "$d")"
+  [[ $name == .* ]] && continue
+  packages+=("$name")
+done
+
+# -- initial selection -----------------------------------------------------
+
+declare -A selected
+for p in "${packages[@]}"; do
+  selected[$p]=0
+done
+for p in "${PRESELECT[@]}"; do
+  [[ -v "selected[$p]" ]] && selected[$p]=1
+done
+
+# -- interactive picker ----------------------------------------------------
+
+cursor=0
+total=${#packages[@]}
+
+draw() {
+  # move cursor up to redraw (except first draw)
+  if [[ ${drawn:-} == 1 ]]; then
+    printf '\033[%dA' "$((total + 2))"
+  fi
+  drawn=1
+
+  printf "${bold}Select packages to install (space=toggle, enter=confirm):${reset}\n"
+  for i in "${!packages[@]}"; do
+    local name="${packages[$i]}"
+    if (( i == cursor )); then
+      local arrow=">"
+    else
+      local arrow=" "
+    fi
+    if (( selected[$name] )); then
+      local mark="${green}[x]${reset}"
+    else
+      local mark="${dim}[ ]${reset}"
+    fi
+    printf " ${cyan}%s${reset} %b %s\n" "$arrow" "$mark" "$name"
+  done
+  printf "${dim}  (a=all, n=none, q=quit)${reset}\n"
+}
+
+pick() {
+  # hide cursor
+  printf '\033[?25l'
+  trap 'printf "\033[?25h"' EXIT
+
+  draw
+  while true; do
+    IFS= read -rsn1 key
+    case "$key" in
+      A|k)  # up
+        (( cursor > 0 )) && (( cursor-- ))
+        ;;
+      B|j)  # down
+        (( cursor < total - 1 )) && (( cursor++ ))
+        ;;
+      ' ')  # toggle
+        local name="${packages[$cursor]}"
+        (( selected[$name] = !selected[$name] ))
+        ;;
+      a)  # all
+        for p in "${packages[@]}"; do selected[$p]=1; done
+        ;;
+      n)  # none
+        for p in "${packages[@]}"; do selected[$p]=0; done
+        ;;
+      q)
+        printf '\033[?25h'
+        echo ""
+        echo "Cancelled."
+        exit 0
+        ;;
+      '')  # enter
+        break
+        ;;
+      $'\x1b')  # escape sequence
+        IFS= read -rsn1 -t 0.01 seq1 || true
+        IFS= read -rsn1 -t 0.01 seq2 || true
+        case "$seq2" in
+          A)  (( cursor > 0 )) && (( cursor-- )) ;;
+          B)  (( cursor < total - 1 )) && (( cursor++ )) ;;
+        esac
+        ;;
+    esac
+    draw
+  done
+
+  # show cursor
+  printf '\033[?25h'
+}
+
+pick
+
+# -- collect chosen --------------------------------------------------------
+
+chosen=()
+for p in "${packages[@]}"; do
+  (( selected[$p] )) && chosen+=("$p")
+done
+
+if (( ${#chosen[@]} == 0 )); then
+  echo "Nothing selected."
+  exit 0
+fi
+
+echo ""
+printf "${bold}Will install:${reset} %s\n" "${chosen[*]}"
+echo ""
+
+# -- ensure stow -----------------------------------------------------------
+
+ensure_stow() {
+  command -v stow &>/dev/null && return
+  echo "stow not found, installing..."
+  if command -v brew &>/dev/null; then
+    brew install stow
+  elif command -v apt-get &>/dev/null; then
+    sudo apt-get install -y stow
+  elif command -v pacman &>/dev/null; then
+    sudo pacman -S --noconfirm stow
+  else
+    echo "Error: cannot install stow automatically. Install it manually and re-run."
+    exit 1
+  fi
+}
+
+ensure_stow
+
+# -- ensure mise (if selected) ---------------------------------------------
+
+ensure_mise() {
+  command -v mise &>/dev/null && return
+  echo "mise not found, installing..."
+  curl -fsSL https://mise.jdx.dev/install.sh | sh
+}
+
+for p in "${chosen[@]}"; do
+  [[ $p == mise ]] && ensure_mise
+done
+
+# -- stow ------------------------------------------------------------------
+
+echo ""
+for p in "${chosen[@]}"; do
+  printf "  stow ${cyan}%s${reset}" "$p"
+  if stow -d "$DOTFILES" -t "$HOME" --no-folding "$p" 2>&1; then
+    printf " ${green}ok${reset}\n"
+  else
+    printf " ${yellow}conflict (--adopt to overwrite)${reset}\n"
+  fi
+done
+
+# -- post-install ----------------------------------------------------------
+
+if [[ " ${chosen[*]} " == *" mise "* ]]; then
+  echo ""
+  echo "Running mise install..."
+  mise install --yes 2>&1 | tail -5
+fi
+
+echo ""
+printf "${green}${bold}Done.${reset}"
+if [[ " ${chosen[*]} " == *" zsh "* ]]; then
+  printf " Restart your shell or run: ${cyan}exec zsh -l${reset}"
+fi
+echo ""
