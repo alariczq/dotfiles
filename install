@@ -28,14 +28,15 @@ fi
 is_stowed() {
   local pkg=$1
   local pkgdir="$DOTFILES/$pkg"
-  local queue=("$pkgdir") dir entry target
+  local queue=("$pkgdir") dir entry target link
   while (( ${#queue} )); do
     dir=$queue[1]; shift queue
     for entry in "$dir"/*(DN) "$dir"/.*(DN); do
       [[ ${entry:t} == (.|..) ]] && continue
       target="$HOME/${entry#$pkgdir/}"
       if [[ -L $target ]]; then
-        [[ $(readlink $target) == */.dotfiles/$pkg/* ]] && return 0
+        link=${target:A}
+        [[ $link == $DOTFILES/$pkg/* ]] && return 0
       elif [[ -d $entry && -d $target ]]; then
         queue+=("$entry")
       fi
