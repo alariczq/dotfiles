@@ -27,10 +27,11 @@ fi
 
 is_stowed() {
   local pkg=$1
-  for f in "$DOTFILES/$pkg"/.*(N) "$DOTFILES/$pkg"/*(N); do
-    local rel="${f#$DOTFILES/$pkg/}"
-    local target="$HOME/$rel"
-    [[ -L $target ]] && return 0
+  local pkgdir="$DOTFILES/$pkg"
+  local -a files=("$pkgdir"/**/*(.DN))
+  local f
+  for f in $files; do
+    [[ -L "$HOME/${f#$pkgdir/}" ]] && return 0
   done
   return 1
 }
@@ -67,7 +68,7 @@ draw() {
   fi
   drawn=1
 
-  printf "${bold}Select packages to install (space=toggle, enter=confirm):${reset}\n"
+  printf "${bold}Select packages to manage (space=toggle, enter=confirm):${reset}\n"
   for i in {1..$total}; do
     local name="$packages[$i]"
     local arrow=" "
@@ -132,20 +133,28 @@ pick() {
 
 pick
 
-# -- collect chosen --------------------------------------------------------
+# -- compute actions -------------------------------------------------------
 
-chosen=()
+to_install=()
+to_remove=()
 for i in {1..$total}; do
-  (( selected[$i] )) && chosen+=("$packages[$i]")
+  local p="$packages[$i]"
+  if (( selected[$i] && !installed[$i] )); then
+    to_install+=("$p")
+  elif (( !selected[$i] && installed[$i] )); then
+    to_remove+=("$p")
+  fi
 done
 
-if (( ${#chosen} == 0 )); then
-  echo "Nothing selected."
+if (( ${#to_install} == 0 && ${#to_remove} == 0 )); then
+  echo ""
+  echo "Nothing changed."
   exit 0
 fi
 
 echo ""
-printf "${bold}Will install:${reset} %s\n" "${chosen[*]}"
+(( ${#to_install} )) && printf "${bold}Install:${reset} %s\n" "${to_install[*]}"
+(( ${#to_remove} ))  && printf "${bold}Remove:${reset}  %s\n" "${to_remove[*]}"
 echo ""
 
 # -- ensure stow -----------------------------------------------------------
@@ -167,22 +176,29 @@ ensure_stow() {
 
 ensure_stow
 
-# -- ensure mise (if selected) ---------------------------------------------
+# -- ensure mise (if installing) -------------------------------------------
 
-ensure_mise() {
-  command -v mise &>/dev/null && return
-  echo "mise not found, installing..."
-  curl -fsSL https://mise.jdx.dev/install.sh | sh
-}
-
-if (( ${chosen[(Ie)mise]} )); then
-  ensure_mise
+if (( ${to_install[(Ie)mise]} )); then
+  if ! command -v mise &>/dev/null; then
+    echo "mise not found, installing..."
+    curl -fsSL https://mise.jdx.dev/install.sh | sh
+  fi
 fi
+
+# -- unstow ----------------------------------------------------------------
+
+for p in $to_remove; do
+  printf "  unstow ${cyan}%s${reset}" "$p"
+  if stow -d "$DOTFILES" -t "$HOME" -D "$p" 2>&1; then
+    printf " ${green}ok${reset}\n"
+  else
+    printf " ${yellow}failed${reset}\n"
+  fi
+done
 
 # -- stow ------------------------------------------------------------------
 
-echo ""
-for p in $chosen; do
+for p in $to_install; do
   printf "  stow ${cyan}%s${reset}" "$p"
   if stow -d "$DOTFILES" -t "$HOME" --no-folding "$p" 2>&1; then
     printf " ${green}ok${reset}\n"
@@ -193,7 +209,7 @@ done
 
 # -- post-install ----------------------------------------------------------
 
-if (( ${chosen[(Ie)mise]} )); then
+if (( ${to_install[(Ie)mise]} )); then
   echo ""
   echo "Running mise install..."
   mise install --yes 2>&1 | tail -5
@@ -201,7 +217,7 @@ fi
 
 echo ""
 printf "${green}${bold}Done.${reset}"
-if (( ${chosen[(Ie)zsh]} )); then
+if (( ${to_install[(Ie)zsh]} )); then
   printf " Restart your shell or run: ${cyan}exec zsh -l${reset}"
 fi
 echo ""
