@@ -1,87 +1,109 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env zsh
+set -uo pipefail
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+DOTFILES="${0:a:h}"
 PRESELECT=(mise zsh)
 
 # -- colors ----------------------------------------------------------------
 
-bold='\033[1m'  dim='\033[2m'  reset='\033[0m'
-green='\033[32m'  yellow='\033[33m'  cyan='\033[36m'
+bold=$'\033[1m'  dim=$'\033[2m'  reset=$'\033[0m'
+green=$'\033[32m'  yellow=$'\033[33m'  cyan=$'\033[36m'
 
 # -- discover stow packages -----------------------------------------------
 
 packages=()
-for d in "$DOTFILES"/*/; do
-  name="$(basename "$d")"
+for d in "$DOTFILES"/*(N/); do
+  local name="${d:t}"
   [[ $name == .* ]] && continue
   packages+=("$name")
 done
 
-# -- initial selection -----------------------------------------------------
+if (( ${#packages} == 0 )); then
+  echo "No packages found in $DOTFILES"
+  exit 1
+fi
 
-declare -A selected
-for p in "${packages[@]}"; do
-  selected[$p]=0
+# -- detect already-installed packages -------------------------------------
+
+is_stowed() {
+  local pkg=$1
+  for f in "$DOTFILES/$pkg"/.*(N) "$DOTFILES/$pkg"/*(N); do
+    local rel="${f#$DOTFILES/$pkg/}"
+    local target="$HOME/$rel"
+    [[ -L $target ]] && return 0
+  done
+  return 1
+}
+
+installed=()
+for p in $packages; do
+  if is_stowed "$p"; then
+    installed+=(1)
+  else
+    installed+=(0)
+  fi
 done
-for p in "${PRESELECT[@]}"; do
-  [[ -v "selected[$p]" ]] && selected[$p]=1
+
+# -- initial selection (parallel array) ------------------------------------
+
+selected=()
+for i in {1..${#packages}}; do
+  if (( installed[$i] )) || (( ${PRESELECT[(Ie)$packages[$i]]} )); then
+    selected+=(1)
+  else
+    selected+=(0)
+  fi
 done
 
 # -- interactive picker ----------------------------------------------------
 
-cursor=0
-total=${#packages[@]}
+local cursor=1
+local total=${#packages}
+local drawn=0
 
 draw() {
-  # move cursor up to redraw (except first draw)
-  if [[ ${drawn:-} == 1 ]]; then
+  if (( drawn )); then
     printf '\033[%dA' "$((total + 2))"
   fi
   drawn=1
 
   printf "${bold}Select packages to install (space=toggle, enter=confirm):${reset}\n"
-  for i in "${!packages[@]}"; do
-    local name="${packages[$i]}"
-    if (( i == cursor )); then
-      local arrow=">"
-    else
-      local arrow=" "
-    fi
-    if (( selected[$name] )); then
-      local mark="${green}[x]${reset}"
-    else
-      local mark="${dim}[ ]${reset}"
-    fi
-    printf " ${cyan}%s${reset} %b %s\n" "$arrow" "$mark" "$name"
+  for i in {1..$total}; do
+    local name="$packages[$i]"
+    local arrow=" "
+    (( i == cursor )) && arrow=">"
+    local mark="${dim}[ ]${reset}"
+    (( selected[$i] )) && mark="${green}[x]${reset}"
+    local suffix=""
+    (( installed[$i] )) && suffix=" ${dim}(installed)${reset}"
+    printf " ${cyan}%s${reset} %b %s%b\n" "$arrow" "$mark" "$name" "$suffix"
   done
   printf "${dim}  (a=all, n=none, q=quit)${reset}\n"
 }
 
 pick() {
-  # hide cursor
   printf '\033[?25l'
-  trap 'printf "\033[?25h"' EXIT
+  trap 'printf "\033[?25h"' EXIT INT TERM
 
   draw
   while true; do
-    IFS= read -rsn1 key
+    local key=""
+    read -rsk1 key
     case "$key" in
-      A|k)  # up
-        (( cursor > 0 )) && (( cursor-- ))
+      k)
+        (( cursor > 1 )) && (( cursor-- ))
         ;;
-      B|j)  # down
-        (( cursor < total - 1 )) && (( cursor++ ))
+      j)
+        (( cursor < total )) && (( cursor++ ))
         ;;
-      ' ')  # toggle
-        local name="${packages[$cursor]}"
-        (( selected[$name] = !selected[$name] ))
+      ' ')
+        (( selected[$cursor] = !selected[$cursor] ))
         ;;
-      a)  # all
-        for p in "${packages[@]}"; do selected[$p]=1; done
+      a)
+        for i in {1..$total}; do selected[$i]=1; done
         ;;
-      n)  # none
-        for p in "${packages[@]}"; do selected[$p]=0; done
+      n)
+        for i in {1..$total}; do selected[$i]=0; done
         ;;
       q)
         printf '\033[?25h'
@@ -89,22 +111,22 @@ pick() {
         echo "Cancelled."
         exit 0
         ;;
-      '')  # enter
+      $'\n')
         break
         ;;
-      $'\x1b')  # escape sequence
-        IFS= read -rsn1 -t 0.01 seq1 || true
-        IFS= read -rsn1 -t 0.01 seq2 || true
+      $'\e')
+        local seq1="" seq2=""
+        read -rsk1 -t 0.01 seq1 2>/dev/null || true
+        read -rsk1 -t 0.01 seq2 2>/dev/null || true
         case "$seq2" in
-          A)  (( cursor > 0 )) && (( cursor-- )) ;;
-          B)  (( cursor < total - 1 )) && (( cursor++ )) ;;
+          A) (( cursor > 1 )) && (( cursor-- )) ;;
+          B) (( cursor < total )) && (( cursor++ )) ;;
         esac
         ;;
     esac
     draw
   done
 
-  # show cursor
   printf '\033[?25h'
 }
 
@@ -113,11 +135,11 @@ pick
 # -- collect chosen --------------------------------------------------------
 
 chosen=()
-for p in "${packages[@]}"; do
-  (( selected[$p] )) && chosen+=("$p")
+for i in {1..$total}; do
+  (( selected[$i] )) && chosen+=("$packages[$i]")
 done
 
-if (( ${#chosen[@]} == 0 )); then
+if (( ${#chosen} == 0 )); then
   echo "Nothing selected."
   exit 0
 fi
@@ -153,14 +175,14 @@ ensure_mise() {
   curl -fsSL https://mise.jdx.dev/install.sh | sh
 }
 
-for p in "${chosen[@]}"; do
-  [[ $p == mise ]] && ensure_mise
-done
+if (( ${chosen[(Ie)mise]} )); then
+  ensure_mise
+fi
 
 # -- stow ------------------------------------------------------------------
 
 echo ""
-for p in "${chosen[@]}"; do
+for p in $chosen; do
   printf "  stow ${cyan}%s${reset}" "$p"
   if stow -d "$DOTFILES" -t "$HOME" --no-folding "$p" 2>&1; then
     printf " ${green}ok${reset}\n"
@@ -171,7 +193,7 @@ done
 
 # -- post-install ----------------------------------------------------------
 
-if [[ " ${chosen[*]} " == *" mise "* ]]; then
+if (( ${chosen[(Ie)mise]} )); then
   echo ""
   echo "Running mise install..."
   mise install --yes 2>&1 | tail -5
@@ -179,7 +201,7 @@ fi
 
 echo ""
 printf "${green}${bold}Done.${reset}"
-if [[ " ${chosen[*]} " == *" zsh "* ]]; then
+if (( ${chosen[(Ie)zsh]} )); then
   printf " Restart your shell or run: ${cyan}exec zsh -l${reset}"
 fi
 echo ""
