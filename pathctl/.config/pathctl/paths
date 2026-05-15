@@ -1,4 +1,3 @@
-/opt/homebrew/bin
-$HOME/.local/bin
+$HOME/.ccs/bin
 $HOME/.local/cargo/bin
 $HOME/.local/go/bin

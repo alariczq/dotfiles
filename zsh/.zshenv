@@ -9,12 +9,14 @@ ZDOTDIR=$XDG_CONFIG_HOME/zsh
 skip_global_compinit=1
 
 export LESSHISTFILE=/dev/null
-export PYTHONSTARTUP=$XDG_CONFIG_HOME/python/startup.py; [[ ! -e $PYTHONSTARTUP ]] && unset PYTHONSTARTUP
-export CHTSH=~/.config/cht.sh
 
-export PATH=$ZDOTDIR/bin:$PATH
+[[ -d /opt/homebrew ]] && export PATH=/opt/homebrew/bin:$PATH
+[[ -d /usr/local/Homebrew ]] && export PATH=/usr/local/bin:$PATH
+export PATH=$HOME/.local/bin:$ZDOTDIR/bin:$PATH
 
 export RUSTUP_HOME=$HOME/.local/rustup
 export CARGO_HOME=$HOME/.local/cargo
+export GOPATH="$HOME/.local/go"
+export GOBIN="$GOPATH/bin"
 
 [ -f $HOME/.zshenv.local ] && source $HOME/.zshenv.local

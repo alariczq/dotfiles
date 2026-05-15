@@ -1,7 +1,7 @@
 [tools]
 bat = "latest"
 eza = "latest"
-fd = "latest"
+fd = { version = "latest", os = ["linux", "macos/arm64"] }
 fzf = "latest"
 rg = "latest"
 jq = "latest"
@@ -20,8 +20,4 @@ uv = "latest"
 experimental = true
 lockfile = true
 go_set_goroot = false
-idiomatic_version_file_enable_tools = ["rust"]
 
-[env]
-GOPATH = "{{env.HOME}}/.local/go"
-GOBIN = "{{env.GOPATH}}/bin"

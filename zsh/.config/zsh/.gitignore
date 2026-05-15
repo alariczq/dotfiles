@@ -2,11 +2,12 @@
 !.gitignore
 !.p10k.zsh
 !.zshrc
+!conf.d/
+!conf.d/*
 !snippets/
 !snippets/*.zsh
 !functions/
 !functions/*
-!zinit/
 !zshrc.zsh
 !bin/
 !bin/*
