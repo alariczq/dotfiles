@@ -4,7 +4,8 @@ theme = "Catppuccin Mocha"
 # ===== Font =====
 font-family = "Maple Mono NF CN Medium"
 font-size = 15
-font-thicken = false
+font-thicken = true
+font-codepoint-map = U+25B0-U+25B1=Menlo
 adjust-cell-height = 20%
 
 # ===== Window =====
