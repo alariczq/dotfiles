@@ -1,14 +1,10 @@
 *
 !.gitignore
-!.p10k.zsh
 !.zshrc
 !conf.d/
 !conf.d/*
-!snippets/
-!snippets/*.zsh
 !functions/
 !functions/*
-!zshrc.zsh
 !bin/
 !bin/*
 !.zsh_plugins.txt
