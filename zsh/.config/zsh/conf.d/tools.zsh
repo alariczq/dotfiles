@@ -5,10 +5,15 @@ eval "$(mise activate zsh --shims)" 2>/dev/null
 eval "$(starship init zsh)" 2>/dev/null
 
 # Defer: not needed until user interacts
-zsh-defer -c 'eval "$(pathctl activate)"'
-zsh-defer -c 'eval "$(brew shellenv)"'
-zsh-defer -c 'eval "$(zoxide init zsh)"'
-zsh-defer -c 'eval "$(fzf --zsh)"'
+if (( $+functions[zsh-defer] )); then
+  zsh-defer -c 'eval "$(pathctl activate)"'
+  zsh-defer -c 'eval "$(zoxide init zsh)"'
+  zsh-defer -c 'eval "$(fzf --zsh)"'
+else
+  eval "$(pathctl activate)" 2>/dev/null
+  eval "$(zoxide init zsh)" 2>/dev/null
+  eval "$(fzf --zsh)" 2>/dev/null
+fi
 
 # fzf defaults
 export FZF_DEFAULT_COMMAND='fd --type f'
