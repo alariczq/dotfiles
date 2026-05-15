@@ -11,3 +11,5 @@
 !zshrc.zsh
 !bin/
 !bin/*
+!.zsh_plugins.txt
+!.zsh_plugins.zsh
