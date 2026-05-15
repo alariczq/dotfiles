@@ -11,6 +11,8 @@
 [core]
   editor = vim
   pager = delta
+  untrackedcache = true
+  fsmonitor = true
 
 [interactive]
   diffFilter = delta --color-only
@@ -42,3 +44,5 @@
 
 [merge]
   conflictstyle = zdiff3
+[feature]
+  manyFiles = true
