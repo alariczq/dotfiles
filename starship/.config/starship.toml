@@ -1,0 +1,196 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+command_timeout = 1500
+scan_timeout = 30
+palette = "p10k_soft"
+
+format = """
+$os\
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_commit\
+$git_state\
+$git_status\
+$fill\
+$jobs\
+$direnv\
+$nix_shell\
+$docker_context\
+$c\
+$rust\
+$golang\
+$nodejs\
+$python\
+$lua\
+$status$cmd_duration$time
+$character"""
+
+[palettes.p10k_soft]
+prompt_pink = "#ffaff3"
+os_cyan = "#8bd5ca"
+path_blue = "#8aadf4"
+git_purple = "#c6a0f6"
+muted = "#939ab7"
+success_green = "#a6da95"
+warning_yellow = "#eed49f"
+error_red = "#ed8796"
+
+[os]
+disabled = false
+style = "bold white"
+format = "[$symbol]($style) "
+
+[os.symbols]
+Macos = ""
+Linux = ""
+Arch = ""
+Ubuntu = ""
+Debian = ""
+
+[username]
+show_always = false
+style_user = "bold path_blue"
+format = "[$user]($style)@"
+
+[hostname]
+ssh_only = true
+style = "bold git_purple"
+format = "[$hostname]($style) "
+
+[directory]
+truncation_length = 0
+style = "bold path_blue"
+read_only = " "
+read_only_style = "error_red"
+format = "[$path]($style)[$read_only]($read_only_style)"
+
+[git_branch]
+symbol = ""
+style = "bold git_purple"
+format = " [$symbol $branch(:$remote_branch)]($style)"
+truncation_length = 32
+
+[git_commit]
+commit_hash_length = 7
+style = "bold muted"
+format = " [$hash$tag]($style)"
+tag_symbol = "  "
+tag_disabled = false
+only_detached = true
+
+[git_state]
+style = "bold warning_yellow"
+format = "[$state( $progress_current/$progress_total)]($style)"
+
+[git_status]
+style = "muted"
+ignore_submodules = true
+format = "($all_status$ahead_behind)"
+ahead = " [↑](git_purple)[${count}](muted)"
+behind = " [↓](git_purple)[${count}](muted)"
+diverged = " [↑](git_purple)[${ahead_count}](muted) [↓](git_purple)[${behind_count}](muted)"
+modified = " [󰷈](warning_yellow)"
+untracked = " [?](path_blue)"
+staged = " [󰄬](success_green)"
+conflicted = " [✕](error_red)"
+deleted = " [−](error_red)"
+renamed = " [→](path_blue)"
+stashed = " [≡](os_cyan)"
+
+[jobs]
+symbol = " "
+style = "bold os_cyan"
+format = "[$symbol$number]($style) "
+
+[direnv]
+disabled = false
+symbol = " "
+style = "bold success_green"
+format = "[$symbol$loaded]($style) "
+loaded_msg = "env"
+unloaded_msg = "env?"
+
+[nix_shell]
+symbol = ""
+style = "bold os_cyan"
+format = "[$symbol $state( \\($name\\))]($style) "
+
+[docker_context]
+symbol = ""
+style = "bold os_cyan"
+format = "[$symbol $context]($style) "
+only_with_files = true
+
+[c]
+symbol = ""
+style = "bold os_cyan"
+format = "[$symbol ($version )]($style) "
+
+[rust]
+symbol = ""
+style = "bold warning_yellow"
+format = "[$symbol ($version )]($style) "
+
+[golang]
+symbol = ""
+style = "bold os_cyan"
+format = "[$symbol ($version )]($style) "
+
+[nodejs]
+symbol = ""
+style = "bold success_green"
+format = "[$symbol ($version )]($style) "
+
+[python]
+symbol = ""
+style = "bold warning_yellow"
+format = "[$symbol $pyenv_prefix($version )(\\($virtualenv\\) )]($style) "
+
+[lua]
+symbol = ""
+style = "bold path_blue"
+format = "[$symbol($version )]($style) "
+
+[cmd_duration]
+min_time = 1500
+format = "[󱎫 $duration](warning_yellow) "
+
+[time]
+disabled = false
+format = "[ $time](muted)"
+time_format = "%H:%M:%S"
+
+[status]
+disabled = false
+format = "[✘ $status]($style) "
+symbol = ""
+success_symbol = ""
+style = "bold error_red"
+map_symbol = false
+recognize_signal_code = true
+
+[character]
+success_symbol = "[❯](bold prompt_pink)"
+error_symbol = "[❯](bold error_red)"
+vimcmd_symbol = "[❮](bold git_purple)"
+
+[fill]
+symbol = " "
+
+[line_break]
+disabled = false
+
+[aws]
+disabled = true
+
+[package]
+disabled = true
+
+[battery]
+disabled = true
+
+[kubernetes]
+disabled = true
