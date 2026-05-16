@@ -17,7 +17,6 @@ $git_status\
 $fill\
 $jobs\
 $direnv\
-$nix_shell\
 $docker_context\
 $c\
 $rust\
@@ -41,7 +40,7 @@ error_red = "#ed8796"
 [os]
 disabled = false
 style = "bold white"
-format = "[$symbol]($style) "
+format = "[$symbol]($style)"
 
 [os.symbols]
 Macos = ""
@@ -65,7 +64,7 @@ truncation_length = 0
 style = "bold path_blue"
 read_only = " "
 read_only_style = "error_red"
-format = "[$path]($style)[$read_only]($read_only_style)"
+format = " [$path]($style)[$read_only]($read_only_style)"
 
 [git_branch]
 symbol = ""
@@ -88,17 +87,17 @@ format = "[$state( $progress_current/$progress_total)]($style)"
 [git_status]
 style = "muted"
 ignore_submodules = true
-format = "($all_status$ahead_behind)"
-ahead = " [↑](git_purple)[${count}](muted)"
-behind = " [↓](git_purple)[${count}](muted)"
-diverged = " [↑](git_purple)[${ahead_count}](muted) [↓](git_purple)[${behind_count}](muted)"
-modified = " [󰷈](warning_yellow)"
-untracked = " [?](path_blue)"
-staged = " [󰄬](success_green)"
-conflicted = " [✕](error_red)"
-deleted = " [−](error_red)"
-renamed = " [→](path_blue)"
-stashed = " [≡](os_cyan)"
+format = " ($conflicted$stashed$deleted$staged$renamed$modified$untracked$ahead_behind)"
+ahead = "[↑](git_purple)[${count}](muted) "
+behind = "[↓](git_purple)[${count}](muted) "
+diverged = "[↑](git_purple)[${ahead_count}](muted) [↓](git_purple)[${behind_count}](muted) "
+modified = "[󰷈](warning_yellow) "
+untracked = "[?](path_blue) "
+staged = "[✔](success_green) "
+conflicted = "[✕](error_red) "
+deleted = "[✘](error_red) "
+renamed = "[→](path_blue) "
+stashed = "[≡](os_cyan) "
 
 [jobs]
 symbol = " "
@@ -112,11 +111,6 @@ style = "bold success_green"
 format = "[$symbol$loaded]($style) "
 loaded_msg = "env"
 unloaded_msg = "env?"
-
-[nix_shell]
-symbol = ""
-style = "bold os_cyan"
-format = "[$symbol $state( \\($name\\))]($style) "
 
 [docker_context]
 symbol = ""
