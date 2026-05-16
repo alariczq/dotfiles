@@ -1,5 +1,5 @@
 local m
-for m in core plugins completion aliases tools; do
+for m in core plugins tools completion aliases; do
   source $ZDOTDIR/conf.d/$m.zsh
 done
 

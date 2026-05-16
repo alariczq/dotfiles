@@ -33,7 +33,7 @@ ANTIDOTE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}/antidote
 local _defer=$ANTIDOTE_HOME/github.com/romkatv/zsh-defer/zsh-defer.plugin.zsh
 if [[ -f $_defer ]]; then
   source $_defer
-  zsh-defer -c '
+  zsh-defer -m -p -c '
     source $ANTIDOTE_HOME/github.com/Aloxaf/fzf-tab/fzf-tab.plugin.zsh
     source $ANTIDOTE_HOME/github.com/hlissner/zsh-autopair/zsh-autopair.plugin.zsh
     source $ANTIDOTE_HOME/github.com/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh

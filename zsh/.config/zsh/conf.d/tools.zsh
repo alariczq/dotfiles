@@ -4,7 +4,6 @@
 eval "$(mise activate zsh --shims)" 2>/dev/null
 eval "$(starship init zsh)" 2>/dev/null
 [[ -f $ZDOTDIR/conf.d/starship-async.zsh ]] && source $ZDOTDIR/conf.d/starship-async.zsh
-
 # Defer: not needed until user interacts
 if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'eval "$(pathctl activate)"'
@@ -32,5 +31,4 @@ export FZF_DEFAULT_OPTS='
 (( $+commands[nvim] )) && EDITOR=nvim || EDITOR=vim
 export EDITOR
 
-export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS --preview='eza -1 --color=always --icons --group-directories-first {2..}'"
-
+export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS --height=~40% --min-height=10 --preview='eza -1 --color=always --icons --group-directories-first {2..}'"

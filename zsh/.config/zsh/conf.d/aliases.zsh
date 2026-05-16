@@ -5,7 +5,7 @@
 (( $+commands[bat] )) && alias cat='bat --plain'
 
 # ls family
-alias l='ls -a'    ll='ls -l'   la='ls -la'   lt='ls --tree'
+alias l='ls -l'     ll='ls -la'   lt='ls --tree'
 
 # Filesystem safety + shortcuts
 alias rm='rm -i'    rd='rmdir'    md='mkdir -p'
