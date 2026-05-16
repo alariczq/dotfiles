@@ -3,7 +3,7 @@
 # Sync: needed before prompt renders
 eval "$(mise activate zsh --shims)" 2>/dev/null
 eval "$(starship init zsh)" 2>/dev/null
-[[ -f $ZDOTDIR/conf.d/starship-async.zsh ]] && source $ZDOTDIR/conf.d/starship-async.zsh
+
 # Defer: not needed until user interacts
 if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'eval "$(pathctl activate)"'
