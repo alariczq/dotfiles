@@ -13,7 +13,7 @@ alias cp='cp -v'    mv='mv -v'
 alias df='df -h'    du='du -h'    dus='du -sh'    dusa='dus --apparent-size'
 
 # Search
-alias grep='command grep --colour=auto --binary-files=without-match --directories=skip'
+alias grep='command grep --colour=auto --binary-files=without-match'
 
 # Misc
 alias reload="exec $SHELL -l -i"
@@ -22,7 +22,4 @@ alias ts='date +%s'
 
 # Editors / CLIs
 alias v='nvim'
-alias c='cursor'
-alias oc='caffeinate -is opencode'
-alias cc='caffeinate -is claude'
-alias cx='caffeinate -is codex'
+alias c='cursor' oc='opencode' cc='claude' cx='codex'
