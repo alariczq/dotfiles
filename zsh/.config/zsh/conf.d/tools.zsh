@@ -9,10 +9,14 @@ if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'eval "$(pathctl activate)"'
   zsh-defer -c 'eval "$(zoxide init zsh)"'
   zsh-defer -c 'eval "$(fzf --zsh)"'
+  zsh-defer -c '(( $+commands[atuin] )) && eval "$(atuin init zsh --disable-up-arrow)"'
+  zsh-defer -c '(( $+commands[direnv] )) && eval "$(direnv hook zsh)"'
 else
   eval "$(pathctl activate)" 2>/dev/null
   eval "$(zoxide init zsh)" 2>/dev/null
   eval "$(fzf --zsh)" 2>/dev/null
+  (( $+commands[atuin] )) && eval "$(atuin init zsh --disable-up-arrow)"
+  (( $+commands[direnv] )) && eval "$(direnv hook zsh)"
 fi
 
 # fzf defaults
