@@ -1,10 +1,11 @@
-# Completion system + fzf-tab integration.
+# Completion + fzf-tab.
 
 WORDCHARS=''
 zmodload zsh/complist
 autoload -Uz compinit
 
-# Skip security check + run -C if dump is fresh (<24h) for faster startup
+# Skip security check + -C when dump is fresh (<24h). Stays sync because
+# zsh-defer would leave compsys half-initialized if Tab is hit early.
 () {
   local zcompdump=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
   [[ -d ${zcompdump:h} ]] || mkdir -p ${zcompdump:h}
@@ -15,15 +16,21 @@ autoload -Uz compinit
   fi
 }
 
-# Optional richer completions from carapace. Deferred so the ~22ms compdef
-# load happens after the first prompt; cached to avoid regenerating each time.
+# Show dotfiles in completions without typing the leading dot.
+_comp_options+=(globdots)
+
 if (( $+commands[carapace] )); then
   export CARAPACE_BRIDGES=${CARAPACE_BRIDGES:-zsh,fish,bash}
+  # Keep kill/killall/pkill on zsh's _kill so the fzf-tab preview + processes rule stay in effect.
+  export CARAPACE_EXCLUDES=${CARAPACE_EXCLUDES:-kill,killall,pkill}
   _carapace_load='
     local cache=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/carapace.zsh
+    local sig=$cache.sig
+    local want="${CARAPACE_BRIDGES}|${CARAPACE_EXCLUDES}"
     [[ -d ${cache:h} ]] || mkdir -p ${cache:h}
-    if [[ ! -r $cache || $commands[carapace] -nt $cache ]]; then
+    if [[ ! -r $cache || $commands[carapace] -nt $cache || ! -r $sig || "$(< $sig)" != "$want" ]]; then
       carapace _carapace >| $cache
+      print -r -- "$want" >| $sig
     fi
     source $cache
   '
@@ -35,35 +42,57 @@ if (( $+commands[carapace] )); then
   unset _carapace_load
 fi
 
-# Core completion behavior
-zstyle ':completion:*' menu select
+zstyle ':completion:*' menu no
 zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' special-dirs true
 zstyle ':completion:*' use-cache yes
 zstyle ':completion:*' cache-path ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/compcache
-zstyle ':completion:*' list-colors ''
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' sort false
-zstyle ':completion:*:descriptions' format '▎ %d'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*:options' description yes
+zstyle ':completion:*:options' auto-description '%d'
 
-# Per-command tweaks
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=01;34=0=01'
-zstyle ':completion:*:*:*:*:processes' command "ps -u $USERNAME -o pid,user,comm -w -w"
-zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
+zstyle ':completion:*' completer _complete _match _approximate
+zstyle ':completion:*:match:*'       original only
+zstyle ':completion:*:approximate:*' max-errors 1 numeric
 
-# fzf-tab
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath --icons=auto'
-zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps -p $word -o command -w -w | sed -e 1d'
-zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
+zstyle ':completion:*:*:kill:*:processes'   list-colors '=(#b) #([0-9]#)*=01;34=0=01'
+zstyle ':completion:*:*:*:*:processes'      command "ps -u $USERNAME -o pid,user,comm -w -w"
+zstyle ':completion:*:cd:*'                 tag-order local-directories directory-stack path-directories
+
+zstyle ':fzf-tab:complete:cd:*'                       fzf-preview 'eza -1 --color=always --icons=auto $realpath'
+zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-preview 'ps -p $word -o command -w -w | sed -e 1d'
+zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-flags '--preview-window=down:3:wrap'
+zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
+  fzf-preview 'echo ${(P)word}'
+
+# Single-target commands: drop fzf's --multi so Tab no longer accumulates picks.
+zstyle ':fzf-tab:complete:(cd|pushd|popd|z|zoxide|__zoxide_z):*' fzf-flags --no-multi
+
+# ssh/scp/...: host candidates lack the `user@` prefix; clear query so all match.
+zstyle ':fzf-tab:complete:(ssh|scp|sftp|mosh|rsync):*' fzf-flags --query=''
+
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zstyle ':fzf-tab:*' switch-group ',' '.'
 zstyle ':fzf-tab:*' use-fzf-default-opts yes
-zstyle ':fzf-tab:*' active-group-style none
+zstyle ':fzf-tab:*' active-group-style bold underline
+# Replace fzf-tab's default key bindings: drop ctrl-space:toggle (macOS uses it
+# for input-source switching) and rebind tab/shift-tab to toggle-then-move.
+zstyle ':fzf-tab:*' fzf-bindings-default \
+  'tab:toggle+down' \
+  'btab:toggle+up' \
+  'change:top' \
+  'bspace:backward-delete-char/eof' \
+  'ctrl-h:backward-delete-char/eof'
+# Earliest-match first, so `--list` query surfaces `--list` over `--choice`.
+zstyle ':fzf-tab:*' fzf-flags --tiebreak=begin,chunk,length
 
-# Group indicator + colors (Tokyo Night palette, matches FZF_DEFAULT_OPTS).
-# Reset (\e[0m) is embedded in `prefix` so the group color only paints the bar,
-# leaving the word and description in the terminal's default fg for readability.
+# Reset embedded in prefix so the group color only paints the bar.
 zstyle ':fzf-tab:*' prefix $'▎\e[0m '
-zstyle ':fzf-tab:*' default-color $'\e[38;2;115;128;145m'
+zstyle ':fzf-tab:*' default-color $'\e[38;2;192;202;245m'
 zstyle ':fzf-tab:*' group-colors \
   $'\e[38;2;157;121;214m' \
   $'\e[38;2;122;162;247m' \

@@ -1,7 +1,10 @@
-# Deferred plugins: downloaded by antidote, loaded manually in plugins.zsh
-romkatv/zsh-defer kind:fpath
-Aloxaf/fzf-tab kind:fpath
-hlissner/zsh-autopair kind:fpath
-olets/zsh-abbr kind:fpath
-zsh-users/zsh-autosuggestions kind:fpath
+# Deferred plugins: downloaded by antidote, loaded manually in plugins.zsh.
+# `kind:clone` = clone only, no fpath/source emitted.
+# `kind:fpath` is kept only where compinit needs the plugin dir at startup
+# (zsh-abbr ships _abbr in completions/; fsh ships _fast-theme at root).
+romkatv/zsh-defer kind:clone
+Aloxaf/fzf-tab kind:clone
+hlissner/zsh-autopair kind:clone
+olets/zsh-abbr kind:fpath autoload:completions
+zsh-users/zsh-autosuggestions kind:clone
 zdharma-continuum/fast-syntax-highlighting kind:fpath

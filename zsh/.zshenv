@@ -18,5 +18,6 @@ export RUSTUP_HOME=$HOME/.local/rustup
 export CARGO_HOME=$HOME/.local/cargo
 export GOPATH="$HOME/.local/go"
 export GOBIN="$GOPATH/bin"
+export GOTOOLCHAIN=local
 
 [ -f $HOME/.zshenv.local ] && source $HOME/.zshenv.local

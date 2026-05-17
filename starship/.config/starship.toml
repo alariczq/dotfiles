@@ -3,10 +3,9 @@
 add_newline = false
 command_timeout = 1500
 scan_timeout = 30
-palette = "p10k_soft"
+palette = "pastel"
 
 format = """
-$os\
 $username\
 $hostname\
 $directory\
@@ -24,10 +23,11 @@ $golang\
 $nodejs\
 $python\
 $lua\
-$status$cmd_duration$time
+$status\
+$cmd_duration$battery$time
 $character"""
 
-[palettes.p10k_soft]
+[palettes.pastel]
 prompt_pink = "#ffaff3"
 os_cyan = "#8bd5ca"
 path_blue = "#8aadf4"
@@ -36,18 +36,6 @@ muted = "#939ab7"
 success_green = "#a6da95"
 warning_yellow = "#eed49f"
 error_red = "#ed8796"
-
-[os]
-disabled = false
-style = "bold white"
-format = "[$symbol]($style)"
-
-[os.symbols]
-Macos = ""
-Linux = ""
-Arch = ""
-Ubuntu = ""
-Debian = ""
 
 [username]
 show_always = false
@@ -64,7 +52,7 @@ truncation_length = 0
 style = "bold path_blue"
 read_only = " "
 read_only_style = "error_red"
-format = " [$path]($style)[$read_only]($read_only_style)"
+format = "[$path]($style)[$read_only]($read_only_style)"
 
 [git_branch]
 symbol = ""
@@ -91,7 +79,7 @@ format = " ($conflicted$stashed$deleted$staged$renamed$modified$untracked$ahead_
 ahead = "[↑](git_purple)[${count}](muted) "
 behind = "[↓](git_purple)[${count}](muted) "
 diverged = "[↑](git_purple)[${ahead_count}](muted) [↓](git_purple)[${behind_count}](muted) "
-modified = "[󰷈](warning_yellow) "
+modified = "[󰤌](warning_yellow) "
 untracked = "[?](path_blue) "
 staged = "[✔](success_green) "
 conflicted = "[✕](error_red) "
@@ -124,7 +112,7 @@ style = "bold os_cyan"
 format = "[$symbol ($version )]($style) "
 
 [rust]
-symbol = ""
+symbol = "󱘗"
 style = "bold warning_yellow"
 format = "[$symbol ($version )]($style) "
 
@@ -139,7 +127,7 @@ style = "bold success_green"
 format = "[$symbol ($version )]($style) "
 
 [python]
-symbol = ""
+symbol = ""
 style = "bold warning_yellow"
 format = "[$symbol $pyenv_prefix($version )(\\($virtualenv\\) )]($style) "
 
@@ -154,7 +142,7 @@ format = "[󱎫 $duration](warning_yellow) "
 
 [time]
 disabled = false
-format = "[ $time](muted)"
+format = "[ $time](dimmed muted)"
 time_format = "%H:%M:%S"
 
 [status]
@@ -177,6 +165,155 @@ symbol = " "
 [line_break]
 disabled = false
 
+
+# language symbols (from starship preset: nerd-font-symbols)
+[buf]
+symbol = " "
+
+[bun]
+symbol = " "
+
+[cpp]
+symbol = " "
+
+[cmake]
+symbol = " "
+
+[cobol]
+symbol = " "
+
+[conda]
+symbol = " "
+
+[crystal]
+symbol = " "
+
+[dart]
+symbol = " "
+
+[deno]
+symbol = " "
+
+[dotnet]
+symbol = " "
+
+[elixir]
+symbol = " "
+
+[elm]
+symbol = " "
+
+[erlang]
+symbol = " "
+
+[fennel]
+symbol = " "
+
+[fortran]
+symbol = " "
+
+[gleam]
+symbol = " "
+
+[gradle]
+symbol = " "
+
+[haskell]
+symbol = " "
+
+[haxe]
+symbol = " "
+
+[helm]
+symbol = " "
+
+[java]
+symbol = " "
+
+[julia]
+symbol = " "
+
+[kotlin]
+symbol = " "
+
+[maven]
+symbol = " "
+
+[meson]
+symbol = "󰔷 "
+
+[mojo]
+symbol = "󰈸 "
+
+[nim]
+symbol = " "
+
+[ocaml]
+symbol = " "
+
+[odin]
+symbol = "󰟢 "
+
+[opa]
+symbol = " "
+
+[perl]
+symbol = " "
+
+[php]
+symbol = " "
+
+[purescript]
+symbol = " "
+
+[raku]
+symbol = "󱖊 "
+
+[red]
+symbol = "󱍼 "
+
+[rlang]
+symbol = "󰟔 "
+
+[ruby]
+symbol = " "
+
+[scala]
+symbol = " "
+
+[solidity]
+symbol = " "
+
+[swift]
+symbol = " "
+
+[terraform]
+symbol = " "
+
+[vlang]
+symbol = " "
+
+[typst]
+symbol = " "
+
+[vagrant]
+symbol = " "
+
+[xmake]
+symbol = " "
+
+[zig]
+symbol = " "
+
+[pixi]
+symbol = "󰏗 "
+
+[pulumi]
+symbol = " "
+
+[spack]
+symbol = " "
+
 [aws]
 disabled = true
 
@@ -184,7 +321,21 @@ disabled = true
 disabled = true
 
 [battery]
-disabled = true
+disabled = false
+full_symbol = "󰁹 "
+charging_symbol = "󰂄 "
+discharging_symbol = "󰂃 "
+unknown_symbol = "󰂑 "
+empty_symbol = "󰂎 "
+format = "[$symbol$percentage]($style) "
+
+[[battery.display]]
+threshold = 20
+style = "bold error_red"
+
+[[battery.display]]
+threshold = 50
+style = "bold warning_yellow"
 
 [kubernetes]
 disabled = true

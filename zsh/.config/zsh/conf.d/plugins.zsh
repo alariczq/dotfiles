@@ -1,11 +1,10 @@
-# Plugin manager (antidote) + custom fpath + batched deferred loading.
+# Plugin manager (antidote) + custom fpath + deferred plugin loading.
 
 fpath=($ZDOTDIR/functions $ZDOTDIR/completions $fpath)
 autoload -Uz $ZDOTDIR/functions/*(N.:t)
 
 ANTIDOTE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}/antidote
 
-# Bootstrap antidote: try Homebrew first, fall back to git clone
 () {
   local antidote_zsh
   for antidote_zsh in \
@@ -13,32 +12,43 @@ ANTIDOTE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}/antidote
     $ANTIDOTE_HOME/antidote/antidote.zsh; do
     [[ -f $antidote_zsh ]] && break
   done
-
   if [[ ! -f $antidote_zsh ]]; then
     print -P "%F{yellow}antidote not found, cloning...%f"
     git clone --depth=1 https://github.com/mattmc3/antidote.git $ANTIDOTE_HOME/antidote || return 1
     antidote_zsh=$ANTIDOTE_HOME/antidote/antidote.zsh
   fi
-
   source $antidote_zsh
 
+  # Bundle to a temp then mv -f, so a failed clone leaves $out untouched and the
+  # `$src -nt $out` check retries next startup instead of caching an empty bundle.
   local src=$ZDOTDIR/.zsh_plugins.txt out=$ZDOTDIR/.zsh_plugins.zsh
   if [[ ! -f $out || $src -nt $out ]]; then
-    antidote bundle <$src >$out
+    local tmp=$out.tmp.$$
+    if antidote bundle <$src >$tmp; then
+      mv -f $tmp $out
+    else
+      print -P "%F{red}antidote bundle failed; keeping previous $out:t%f" >&2
+      rm -f $tmp
+    fi
   fi
   [[ -f $out ]] && source $out
 }
 
-# Batch all interactive plugins into ONE deferred call for a single prompt redraw.
 local _defer=$ANTIDOTE_HOME/github.com/romkatv/zsh-defer/zsh-defer.plugin.zsh
 if [[ -f $_defer ]]; then
   source $_defer
   zsh-defer -m -p -c '
-    [[ -f $ANTIDOTE_HOME/github.com/Aloxaf/fzf-tab/fzf-tab.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/Aloxaf/fzf-tab/fzf-tab.plugin.zsh
-    [[ -f $ANTIDOTE_HOME/github.com/hlissner/zsh-autopair/zsh-autopair.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/hlissner/zsh-autopair/zsh-autopair.plugin.zsh
-    [[ -f $ANTIDOTE_HOME/github.com/olets/zsh-abbr/zsh-abbr.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/olets/zsh-abbr/zsh-abbr.plugin.zsh
-    [[ -f $ANTIDOTE_HOME/github.com/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
-    [[ -f $ANTIDOTE_HOME/github.com/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+    local base=$ANTIDOTE_HOME/github.com p f
+    for p in \
+      Aloxaf/fzf-tab \
+      hlissner/zsh-autopair \
+      olets/zsh-abbr \
+      zsh-users/zsh-autosuggestions \
+      zdharma-continuum/fast-syntax-highlighting
+    do
+      f=$base/$p/${p#*/}.plugin.zsh
+      [[ -f $f ]] && source $f
+    done
     _fsh_theme
   '
 fi
