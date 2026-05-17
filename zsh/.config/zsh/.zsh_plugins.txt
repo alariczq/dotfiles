@@ -2,5 +2,6 @@
 romkatv/zsh-defer kind:fpath
 Aloxaf/fzf-tab kind:fpath
 hlissner/zsh-autopair kind:fpath
+olets/zsh-abbr kind:fpath
 zsh-users/zsh-autosuggestions kind:fpath
 zdharma-continuum/fast-syntax-highlighting kind:fpath

@@ -34,10 +34,11 @@ local _defer=$ANTIDOTE_HOME/github.com/romkatv/zsh-defer/zsh-defer.plugin.zsh
 if [[ -f $_defer ]]; then
   source $_defer
   zsh-defer -m -p -c '
-    source $ANTIDOTE_HOME/github.com/Aloxaf/fzf-tab/fzf-tab.plugin.zsh
-    source $ANTIDOTE_HOME/github.com/hlissner/zsh-autopair/zsh-autopair.plugin.zsh
-    source $ANTIDOTE_HOME/github.com/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
-    source $ANTIDOTE_HOME/github.com/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+    [[ -f $ANTIDOTE_HOME/github.com/Aloxaf/fzf-tab/fzf-tab.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/Aloxaf/fzf-tab/fzf-tab.plugin.zsh
+    [[ -f $ANTIDOTE_HOME/github.com/hlissner/zsh-autopair/zsh-autopair.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/hlissner/zsh-autopair/zsh-autopair.plugin.zsh
+    [[ -f $ANTIDOTE_HOME/github.com/olets/zsh-abbr/zsh-abbr.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/olets/zsh-abbr/zsh-abbr.plugin.zsh
+    [[ -f $ANTIDOTE_HOME/github.com/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
+    [[ -f $ANTIDOTE_HOME/github.com/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh ]] && source $ANTIDOTE_HOME/github.com/zdharma-continuum/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
     _fsh_theme
   '
 fi

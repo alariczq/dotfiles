@@ -9,3 +9,4 @@
 !bin/*
 !.zsh_plugins.txt
 !.zsh_plugins.zsh
+!abbreviations
