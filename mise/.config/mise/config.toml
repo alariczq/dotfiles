@@ -5,6 +5,7 @@ fd = { version = "latest", os = ["linux", "macos/arm64"] }
 fzf = "latest"
 rg = "latest"
 zoxide = "latest"
+direnv = "latest"
 jq = "latest"
 watchexec = "latest"
 usage = "latest"
@@ -16,9 +17,9 @@ k6 = "latest"
 node = "22.22.0"
 pnpm = "10.29.1"
 uv = "latest"
+xh = "latest"
 
 [settings]
 experimental = true
 lockfile = true
 go_set_goroot = false
-
