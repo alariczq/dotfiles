@@ -6,13 +6,34 @@ autoload -Uz compinit
 
 # Skip security check + run -C if dump is fresh (<24h) for faster startup
 () {
-  local zcompdump=$ZDOTDIR/.zcompdump
+  local zcompdump=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
+  [[ -d ${zcompdump:h} ]] || mkdir -p ${zcompdump:h}
   if [[ -f $zcompdump(#qNm-1) ]]; then
     compinit -C -d $zcompdump
   else
     compinit -d $zcompdump
   fi
 }
+
+# Optional richer completions from carapace. Deferred so the ~22ms compdef
+# load happens after the first prompt; cached to avoid regenerating each time.
+if (( $+commands[carapace] )); then
+  export CARAPACE_BRIDGES=${CARAPACE_BRIDGES:-zsh,fish,bash}
+  _carapace_load='
+    local cache=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/carapace.zsh
+    [[ -d ${cache:h} ]] || mkdir -p ${cache:h}
+    if [[ ! -r $cache || $commands[carapace] -nt $cache ]]; then
+      carapace _carapace >| $cache
+    fi
+    source $cache
+  '
+  if (( $+functions[zsh-defer] )); then
+    zsh-defer -c $_carapace_load
+  else
+    eval $_carapace_load
+  fi
+  unset _carapace_load
+fi
 
 # Core completion behavior
 zstyle ':completion:*' menu select

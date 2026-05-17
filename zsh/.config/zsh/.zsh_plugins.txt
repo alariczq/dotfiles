@@ -1,6 +1,3 @@
-# Completions (fpath only, before compinit)
-zsh-users/zsh-completions kind:fpath
-
 # Deferred plugins: downloaded by antidote, loaded manually in plugins.zsh
 romkatv/zsh-defer kind:fpath
 Aloxaf/fzf-tab kind:fpath

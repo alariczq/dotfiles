@@ -1,4 +1,3 @@
-fpath+=( "$HOME/.cache/antidote/github.com/zsh-users/zsh-completions" )
 fpath+=( "$HOME/.cache/antidote/github.com/romkatv/zsh-defer" )
 fpath+=( "$HOME/.cache/antidote/github.com/Aloxaf/fzf-tab" )
 fpath+=( "$HOME/.cache/antidote/github.com/hlissner/zsh-autopair" )
