@@ -4,17 +4,7 @@ WORDCHARS=''
 zmodload zsh/complist
 autoload -Uz compinit
 
-# Skip security check + -C when dump is fresh (<24h). Stays sync because
-# zsh-defer would leave compsys half-initialized if Tab is hit early.
-() {
-  local zcompdump=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump
-  [[ -d ${zcompdump:h} ]] || mkdir -p ${zcompdump:h}
-  if [[ -f $zcompdump(#qNm-1) ]]; then
-    compinit -C -d $zcompdump
-  else
-    compinit -d $zcompdump
-  fi
-}
+compinit
 
 # Show dotfiles in completions without typing the leading dot.
 _comp_options+=(globdots)
@@ -94,4 +84,3 @@ zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-flags '--preview-windo
 zstyle ':completion:*:git-checkout:*' sort false
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
   fzf-preview 'echo ${(P)word}'
-
