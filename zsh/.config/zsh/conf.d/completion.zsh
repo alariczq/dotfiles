@@ -73,9 +73,10 @@ zstyle ':fzf-tab:*' group-colors \
 zstyle ':fzf-tab:*' fzf-bindings-default \
  'tab:down' \
  'btab:up' \
- 'alt-space:toggle' \
- 'bspace:backward-delete-char/eof' \
- 'ctrl-h:backward-delete-char/eof'
+ 'ctrl-j:toggle+down' \
+ 'ctrl-k:toggle+up' \
+ 'ctrl-l:toggle' \
+ 'bspace:backward-delete-char/eof'
 
 zstyle ':fzf-tab:complete:(cd|pushd|popd|z|zoxide|__zoxide_z):*' fzf-flags --no-multi
 zstyle ':fzf-tab:complete:cd:*'                       fzf-preview 'eza -1 --color=always --icons=auto $realpath'

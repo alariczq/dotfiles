@@ -52,3 +52,5 @@ if [[ -f $_defer ]]; then
     _fsh_theme
   '
 fi
+
+(( $+commands[switch-ime] )) && { zsh-defer -m -p -c 'switch-ime com.apple.keylayout.ABC &>/dev/null' }

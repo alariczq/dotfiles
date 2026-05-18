@@ -18,10 +18,13 @@ _drop_long_history() { (( $#1 > 200 )) && return 2; return 0 }
 add-zsh-hook zshaddhistory _drop_long_history
 
 bindkey -e
+KEYTIMEOUT=1
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search edit-command-line
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 zle -N edit-command-line
+zle -N _fancy_ctrl_z
+zle -N _sudo_prepend
 
 bindkey "$terminfo[khome]"  beginning-of-line
 bindkey "$terminfo[kend]"   end-of-line
@@ -35,6 +38,10 @@ bindkey '^d'                delete-char
 bindkey '^o'                edit-command-line
 bindkey '^[q'               push-line-or-edit
 bindkey ' '                 magic-space
+bindkey '^Z'                _fancy_ctrl_z
+bindkey '^[^['              _sudo_prepend
+bindkey '^[[109;5u'         accept-line
+bindkey '^[[27;2;13~'       accept-line
 
 export FZF_DEFAULT_COMMAND='fd --type f'
 export FZF_DEFAULT_OPTS='--ansi
@@ -63,3 +70,5 @@ export _ZO_FZF_OPTS="$FZF_DEFAULT_OPTS --height=~40% --min-height=10 --preview='
 
 (( $+commands[nvim] )) && EDITOR=nvim || EDITOR=vim
 export EDITOR
+
+(( $+commands[switch-ime] )) && { switch-ime com.apple.keylayout.ABC &>/dev/null &! }
