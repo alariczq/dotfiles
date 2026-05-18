@@ -21,8 +21,8 @@ _comp_options+=(globdots)
 
 if (( $+commands[carapace] )); then
   export CARAPACE_BRIDGES=${CARAPACE_BRIDGES:-zsh,fish,bash}
-  # Keep kill/killall/pkill on zsh's _kill so the fzf-tab preview + processes rule stay in effect.
   export CARAPACE_EXCLUDES=${CARAPACE_EXCLUDES:-kill,killall,pkill}
+
   _carapace_load='
     local cache=${XDG_CACHE_HOME:-$HOME/.cache}/zsh/carapace.zsh
     local sig=$cache.sig
@@ -63,35 +63,13 @@ zstyle ':completion:*:*:kill:*:processes'   list-colors '=(#b) #([0-9]#)*=01;34=
 zstyle ':completion:*:*:*:*:processes'      command "ps -u $USERNAME -o pid,user,comm -w -w"
 zstyle ':completion:*:cd:*'                 tag-order local-directories directory-stack path-directories
 
-zstyle ':fzf-tab:complete:cd:*'                       fzf-preview 'eza -1 --color=always --icons=auto $realpath'
-zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-preview 'ps -p $word -o command -w -w | sed -e 1d'
-zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-flags '--preview-window=down:3:wrap'
-zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
-  fzf-preview 'echo ${(P)word}'
-
-# Single-target commands: drop fzf's --multi so Tab no longer accumulates picks.
-zstyle ':fzf-tab:complete:(cd|pushd|popd|z|zoxide|__zoxide_z):*' fzf-flags --no-multi
-
-# ssh/scp/...: host candidates lack the `user@` prefix; clear query so all match.
-zstyle ':fzf-tab:complete:(ssh|scp|sftp|mosh|rsync):*' fzf-flags --query=''
-
 zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
-zstyle ':fzf-tab:*' switch-group ',' '.'
+zstyle ':fzf-tab:*' query-string prefix
+zstyle ':fzf-tab:*' switch-group '<' '>'
 zstyle ':fzf-tab:*' use-fzf-default-opts yes
 zstyle ':fzf-tab:*' active-group-style bold underline
-# Replace fzf-tab's default key bindings: drop ctrl-space:toggle (macOS uses it
-# for input-source switching) and rebind tab/shift-tab to toggle-then-move.
-zstyle ':fzf-tab:*' fzf-bindings-default \
-  'tab:toggle+down' \
-  'btab:toggle+up' \
-  'change:top' \
-  'bspace:backward-delete-char/eof' \
-  'ctrl-h:backward-delete-char/eof'
-# Earliest-match first, so `--list` query surfaces `--list` over `--choice`.
 zstyle ':fzf-tab:*' fzf-flags --tiebreak=begin,chunk,length
-
-# Reset embedded in prefix so the group color only paints the bar.
-zstyle ':fzf-tab:*' prefix $'▎\e[0m '
+zstyle ':fzf-tab:*' prefix $'▎'
 zstyle ':fzf-tab:*' default-color $'\e[38;2;192;202;245m'
 zstyle ':fzf-tab:*' group-colors \
   $'\e[38;2;157;121;214m' \
@@ -102,3 +80,18 @@ zstyle ':fzf-tab:*' group-colors \
   $'\e[38;2;255;158;100m' \
   $'\e[38;2;247;118;142m' \
   $'\e[38;2;220;142;217m'
+zstyle ':fzf-tab:*' fzf-bindings-default \
+ 'tab:down' \
+ 'btab:up' \
+ 'alt-space:toggle' \
+ 'bspace:backward-delete-char/eof' \
+ 'ctrl-h:backward-delete-char/eof'
+
+zstyle ':fzf-tab:complete:(cd|pushd|popd|z|zoxide|__zoxide_z):*' fzf-flags --no-multi
+zstyle ':fzf-tab:complete:cd:*'                       fzf-preview 'eza -1 --color=always --icons=auto $realpath'
+zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-preview 'ps -p $word -o command -w -w | sed -e 1d'
+zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-flags '--preview-window=down:3:wrap'
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
+  fzf-preview 'echo ${(P)word}'
+
