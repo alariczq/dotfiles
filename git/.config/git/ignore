@@ -1,6 +1,8 @@
+.DS_Store
+
 *~
 .*.swp
-.DS_Store
+
 .vscode/
 .idea/
 venv/
