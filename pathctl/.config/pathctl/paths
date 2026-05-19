@@ -1,3 +1,4 @@
 $HOME/.ccs/bin
 $HOME/.local/cargo/bin
 $HOME/.local/go/bin
+$HOME/.cache/antidote/github.com/wfxr/forgit/bin

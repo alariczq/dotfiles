@@ -8,3 +8,4 @@ hlissner/zsh-autopair kind:clone
 olets/zsh-abbr kind:fpath autoload:completions
 zsh-users/zsh-autosuggestions kind:clone
 zdharma-continuum/fast-syntax-highlighting kind:fpath
+wfxr/forgit kind:clone

@@ -10,7 +10,7 @@ compinit
 _comp_options+=(globdots)
 
 if (( $+commands[carapace] )); then
-  export CARAPACE_BRIDGES=${CARAPACE_BRIDGES:-zsh,fish,bash}
+  export CARAPACE_BRIDGES=${CARAPACE_BRIDGES:-zsh}
   export CARAPACE_EXCLUDES=${CARAPACE_EXCLUDES:-kill,killall,pkill}
 
   _carapace_load='
@@ -83,5 +83,5 @@ zstyle ':fzf-tab:complete:cd:*'                       fzf-preview 'eza -1 --colo
 zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-preview 'ps -p $word -o command -w -w | sed -e 1d'
 zstyle ':fzf-tab:complete:kill:argument-rest'         fzf-flags '--preview-window=down:3:wrap'
 zstyle ':completion:*:git-checkout:*' sort false
-zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
+zstyle ':fzf-tab:complete:(-parameter-|-brace-parameter-|export|unset|expand):*' \
   fzf-preview 'echo ${(P)word}'

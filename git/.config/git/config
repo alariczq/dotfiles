@@ -30,17 +30,18 @@
   ; file-renamed-label = ""
   ; file-copied-label = ""
   hunk-header-style = omit
-  minus-style = "syntax #44293A"
-  minus-emph-style = "bold syntax #6E3A3F"
-  plus-style = "syntax #2C3E36"
-  plus-emph-style = "bold syntax #3E5A47"
+  minus-style = "syntax #4a2940"
+  minus-emph-style = "bold syntax #6e3a5e"
+  plus-style = "syntax #2b463f"
+  plus-emph-style = "bold syntax #3e6357"
   line-numbers = true
-  ; line-numbers-left-format = ""
-  ; line-numbers-right-format = "{np:>3} "
-  line-numbers-right-style = "#6c7086"
-  line-numbers-minus-style = "#f38ba8"
-  line-numbers-plus-style = "#a6e3a1"
-  line-numbers-zero-style = "#6c7086"
+  line-numbers-left-format = "{nm:>3}"
+  line-numbers-right-format = "{np:>3}│ "
+  line-numbers-left-style = "#585b70"
+  line-numbers-right-style = "#585b70"
+  line-numbers-minus-style = "#d77aa3 bold"
+  line-numbers-plus-style = "#7ad9b0 bold"
+  line-numbers-zero-style = "#585b70"
 
 [merge]
   conflictstyle = zdiff3

@@ -44,12 +44,14 @@ if [[ -f $_defer ]]; then
       hlissner/zsh-autopair \
       olets/zsh-abbr \
       zsh-users/zsh-autosuggestions \
-      zdharma-continuum/fast-syntax-highlighting
+      zdharma-continuum/fast-syntax-highlighting \
+      wfxr/forgit
     do
       f=$base/$p/${p#*/}.plugin.zsh
       [[ -f $f ]] && source $f
     done
     _fsh_theme
+    fpath=(${FORGIT_INSTALL_DIR}/completions $fpath)
   '
 fi
 
