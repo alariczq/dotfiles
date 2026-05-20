@@ -22,7 +22,7 @@
   dark = true
   tabs = 4
   syntax-theme = Catppuccin Mocha
-  file-style = "#cba6f7 bold"
+  file-style = "#c084fc bold"
   file-decoration-style = "#45475a ul"
   ; file-added-label = ""
   ; file-removed-label = ""
@@ -47,3 +47,56 @@
   conflictstyle = zdiff3
 [feature]
   manyFiles = true
+
+; Catppuccin Mocha palette for git's native colors.
+; Diff output still goes through delta (see [delta] above); these color.diff.*
+; values only show when delta is bypassed (piping, --no-pager + no diffFilter).
+[color]
+  ui = auto
+[color "status"]
+  header       = "#e2e8f0"
+  branch       = "#c084fc bold"
+  added        = "#4ade80 bold"
+  changed      = "#facc15"
+  untracked    = "#fb7185"
+  unmerged     = "#fb923c bold"
+  localBranch  = "#c084fc"
+  remoteBranch = "#2dd4bf"
+[color "branch"]
+  current  = "#f472b6 bold"
+  local    = "#c084fc"
+  remote   = "#2dd4bf"
+  upstream = "#3b82f6"
+  plain    = "#e2e8f0"
+[color "diff"]
+  meta       = "#c084fc bold"
+  frag       = "#2dd4bf"
+  func       = "#3b82f6 italic"
+  old        = "#fb7185"
+  new        = "#4ade80"
+  commit     = "#38bdf8"
+  whitespace = "reverse #fb7185"
+[color "decorate"]
+  branch       = "#c084fc bold"
+  remoteBranch = "#2dd4bf"
+  tag          = "#facc15 bold"
+  HEAD         = "#f472b6 italic bold"
+  stash        = "#fb923c"
+  grafted      = "#585b70"
+[color "grep"]
+  filename   = "#c084fc"
+  linenumber = "#585b70"
+  match      = "#facc15 bold"
+  separator  = "#585b70"
+  function   = "#3b82f6 italic"
+  selected   = "#e2e8f0"
+[color "interactive"]
+  prompt = "#c084fc bold"
+  header = "#f472b6 bold"
+  help   = "#2dd4bf"
+  error  = "#fb7185 bold"
+[color "remote"]
+  hint    = "#2dd4bf"
+  warning = "#facc15"
+  success = "#4ade80"
+  error   = "#fb7185 bold"
