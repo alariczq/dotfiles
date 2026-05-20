@@ -5,7 +5,7 @@
 romkatv/zsh-defer kind:clone
 Aloxaf/fzf-tab kind:clone
 hlissner/zsh-autopair kind:clone
-olets/zsh-abbr kind:fpath autoload:completions
+olets/zsh-abbr kind:clone
 zsh-users/zsh-autosuggestions kind:clone
 zdharma-continuum/fast-syntax-highlighting kind:fpath
 wfxr/forgit kind:clone

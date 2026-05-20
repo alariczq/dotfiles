@@ -4,11 +4,6 @@ WORDCHARS=''
 zmodload zsh/complist
 autoload -Uz compinit
 
-compinit
-
-# Show dotfiles in completions without typing the leading dot.
-_comp_options+=(globdots)
-
 if (( $+commands[carapace] )); then
   export CARAPACE_BRIDGES=${CARAPACE_BRIDGES:-zsh}
   export CARAPACE_EXCLUDES=${CARAPACE_EXCLUDES:-kill,killall,pkill}

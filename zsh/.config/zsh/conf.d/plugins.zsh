@@ -34,25 +34,35 @@ ANTIDOTE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}/antidote
   [[ -f $out ]] && source $out
 }
 
+_load_deferred_plugins() {
+  local base=$ANTIDOTE_HOME/github.com p f
+  for p in \
+    hlissner/zsh-autopair \
+    olets/zsh-abbr \
+    zsh-users/zsh-autosuggestions \
+    zdharma-continuum/fast-syntax-highlighting \
+    wfxr/forgit
+  do
+    f=$base/$p/${p#*/}.plugin.zsh
+    [[ -f $f ]] && source $f
+  done
+  local _abbr_key
+  for _abbr_key in ${(k)ABBR_REGULAR_USER_ABBREVIATIONS}; do
+    alias ${(Q)_abbr_key}=${(Q)ABBR_REGULAR_USER_ABBREVIATIONS[$_abbr_key]}
+  done
+  unset _abbr_key
+
+  compinit
+  _comp_options+=(globdots)
+  source $base/Aloxaf/fzf-tab/fzf-tab.plugin.zsh
+  _fsh_theme
+  fpath=(${FORGIT_INSTALL_DIR}/completions $fpath)
+}
+
 local _defer=$ANTIDOTE_HOME/github.com/romkatv/zsh-defer/zsh-defer.plugin.zsh
 if [[ -f $_defer ]]; then
   source $_defer
-  zsh-defer -m -p -c '
-    local base=$ANTIDOTE_HOME/github.com p f
-    for p in \
-      Aloxaf/fzf-tab \
-      hlissner/zsh-autopair \
-      olets/zsh-abbr \
-      zsh-users/zsh-autosuggestions \
-      zdharma-continuum/fast-syntax-highlighting \
-      wfxr/forgit
-    do
-      f=$base/$p/${p#*/}.plugin.zsh
-      [[ -f $f ]] && source $f
-    done
-    _fsh_theme
-    fpath=(${FORGIT_INSTALL_DIR}/completions $fpath)
-  '
+  zsh-defer -m -p _load_deferred_plugins
 fi
 
 (( $+commands[switch-ime] )) && { zsh-defer -m -p -c 'switch-ime com.apple.keylayout.ABC &>/dev/null' }
