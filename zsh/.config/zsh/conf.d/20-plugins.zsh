@@ -4,6 +4,7 @@ fpath=($ZDOTDIR/functions $ZDOTDIR/completions $fpath)
 autoload -Uz $ZDOTDIR/functions/*(N.:t)
 
 ANTIDOTE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}/antidote
+export ABBR_USER_ABBREVIATIONS_FILE=$ZDOTDIR/abbreviations
 
 () {
   local antidote_zsh
@@ -47,7 +48,7 @@ _load_deferred_plugins() {
     [[ -f $f ]] && source $f
   done
 
-  eval "$(abbr export-aliases)" 2>&1 /dev/null
+  eval "$(abbr export-aliases)" &>/dev/null
 
   compinit
   _comp_options+=(globdots)
@@ -60,6 +61,6 @@ local _defer=$ANTIDOTE_HOME/github.com/romkatv/zsh-defer/zsh-defer.plugin.zsh
 if [[ -f $_defer ]]; then
   source $_defer
   zsh-defer -m -p _load_deferred_plugins
+else
+  _load_deferred_plugins
 fi
-
-(( $+commands[switch-ime] )) && { zsh-defer -m -p -c 'switch-ime com.apple.keylayout.ABC &>/dev/null' }

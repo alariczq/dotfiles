@@ -1,5 +1,6 @@
-local m
-for m in core plugins completion tools aliases; do
-  source $ZDOTDIR/conf.d/$m.zsh
-done
-
+() {
+    local f
+    for f in $ZDOTDIR/conf.d/*.zsh(N); do
+        source $f
+    done
+}
