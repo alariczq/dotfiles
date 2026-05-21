@@ -21,4 +21,3 @@ alias plast='last -20'
 alias ts='date +%s'
 
 alias v='nvim'
-alias c='cursor'   oc='opencode'  cc='claude'    cx='codex'

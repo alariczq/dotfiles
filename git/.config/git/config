@@ -35,8 +35,8 @@
   plus-style = "syntax #2b463f"
   plus-emph-style = "bold syntax #3e6357"
   line-numbers = true
-  line-numbers-left-format = "{nm:>3}"
-  line-numbers-right-format = "{np:>3}│ "
+  line-numbers-left-format = "{nm:>4} "
+  line-numbers-right-format = "{np:>4}│ "
   line-numbers-left-style = "#585b70"
   line-numbers-right-style = "#585b70"
   line-numbers-minus-style = "#d77aa3 bold"

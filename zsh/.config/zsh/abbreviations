@@ -1,4 +1,5 @@
 abbr "cc"="claude"
 abbr "cx"="codex"
 abbr "gp"="git push"
+abbr "gs"="git status"
 abbr "lg"="lazygit"

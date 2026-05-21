@@ -46,11 +46,8 @@ _load_deferred_plugins() {
     f=$base/$p/${p#*/}.plugin.zsh
     [[ -f $f ]] && source $f
   done
-  local _abbr_key
-  for _abbr_key in ${(k)ABBR_REGULAR_USER_ABBREVIATIONS}; do
-    alias ${(Q)_abbr_key}=${(Q)ABBR_REGULAR_USER_ABBREVIATIONS[$_abbr_key]}
-  done
-  unset _abbr_key
+
+  eval "$(abbr export-aliases)" 2>&1 /dev/null
 
   compinit
   _comp_options+=(globdots)

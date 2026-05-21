@@ -20,12 +20,19 @@ window-save-state = always
 # ===== Visual Effects =====
 background-opacity = 0.86
 background-blur = true
-unfocused-split-opacity = 1 
+# Removes the dark fringing around glyphs that `native` shows on a transparent
+# background. Available since 1.1.0.
+alpha-blending = linear-corrected
+unfocused-split-opacity = 1
 minimum-contrast = 1.1
 
 # ===== Cursor =====
 cursor-style = block
 cursor-style-blink = true
+# Block cursor inverts using the current cell's colors, so the cursor adapts to
+# colored text instead of using the theme's fixed accent. Available since 1.2.0.
+cursor-color = cell-foreground
+cursor-text = cell-background
 
 # ===== Mouse & Links =====
 mouse-hide-while-typing = true
@@ -37,7 +44,7 @@ clipboard-trim-trailing-spaces = true
 
 # ===== Shell Integration =====
 shell-integration = detect
-shell-integration-features = no-cursor,sudo,title,ssh-terminfo,ssh-env
+shell-integration-features = no-cursor,sudo,title,ssh-terminfo,ssh-env,path
 
 # ===== Quick Terminal =====
 quick-terminal-position = top
@@ -55,6 +62,6 @@ scrollback-limit = 100000000
 window-vsync = false
 
 # ===== Keybindings =====
+# super+d=new_split:right and super+shift+enter=toggle_split_zoom are already
+# the built-in defaults, so only the custom global binding is listed here.
 keybind = global:cmd+backslash=toggle_quick_terminal
-keybind = super+d=new_split:right
-keybind = super+shift+enter=toggle_split_zoom

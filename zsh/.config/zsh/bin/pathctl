@@ -323,8 +323,8 @@ list_paths() {
 }
 
 generate_activation() {
-    local paths new_path_str=""
-    local -a new_paths=()
+    local paths
+    local -a managed_paths=()
 
     paths=$(get_all_paths)
 
@@ -337,9 +337,7 @@ generate_activation() {
                 continue
             fi
 
-            if ! is_in_current_path "$item_path"; then
-                new_paths+=("$expanded_path")
-            fi
+            managed_paths+=("$expanded_path")
         fi
     done <<< "$paths"
 
@@ -354,16 +352,47 @@ generate_activation() {
 
     echo "export __PATHCTL_SCRIPT=\"$pathctl_script_path\""
 
-    if [[ ${#new_paths[@]} -gt 0 ]]; then
-        local i
-        for ((i=${#new_paths[@]}-1; i>=0; i--)); do
-            if [[ -z "$new_path_str" ]]; then
-                new_path_str="${new_paths[$i]}"
+    if [[ ${#managed_paths[@]} -gt 0 ]]; then
+        # Preserve the original ordering: iterate config entries from last to first
+        # so the resulting PATH segment matches the pre-fix layout.
+        local managed_colon="" i
+        for ((i=${#managed_paths[@]}-1; i>=0; i--)); do
+            if [[ -z "$managed_colon" ]]; then
+                managed_colon="${managed_paths[$i]}"
             else
-                new_path_str="$new_path_str:${new_paths[$i]}"
+                managed_colon="$managed_colon:${managed_paths[$i]}"
             fi
         done
-        echo "export PATH=\"${new_path_str}:\$PATH\""
+
+        # Strip any existing occurrences of managed paths from PATH, then prepend
+        # them in config order. Idempotent: running this twice yields the same PATH.
+        cat << EOF
+__pathctl_apply() {
+    __pathctl_managed_list="\$1"
+    __pathctl_remaining=":\$PATH:"
+    __pathctl_rest="\$__pathctl_managed_list"
+    while [ -n "\$__pathctl_rest" ]; do
+        case "\$__pathctl_rest" in
+            *:*) __pathctl_one="\${__pathctl_rest%%:*}"; __pathctl_rest="\${__pathctl_rest#*:}" ;;
+            *) __pathctl_one="\$__pathctl_rest"; __pathctl_rest="" ;;
+        esac
+        [ -z "\$__pathctl_one" ] && continue
+        while case "\$__pathctl_remaining" in *":\$__pathctl_one:"*) true ;; *) false ;; esac; do
+            __pathctl_remaining="\${__pathctl_remaining%%:\$__pathctl_one:*}:\${__pathctl_remaining#*:\$__pathctl_one:}"
+        done
+    done
+    __pathctl_remaining="\${__pathctl_remaining#:}"
+    __pathctl_remaining="\${__pathctl_remaining%:}"
+    if [ -n "\$__pathctl_remaining" ]; then
+        export PATH="\$__pathctl_managed_list:\$__pathctl_remaining"
+    else
+        export PATH="\$__pathctl_managed_list"
+    fi
+    unset __pathctl_managed_list __pathctl_remaining __pathctl_rest __pathctl_one
+}
+__pathctl_apply "$managed_colon"
+unset -f __pathctl_apply
+EOF
     fi
     
     cat << 'EOF'
